@@ -45,7 +45,6 @@ public class batchJob {
                 .build();
     }
 
-    // TODO: 구분자 기호 ','로 설정 관련 작업 필요함(데이터 안에 ,가 있는 경우 구분자로 인식될 수 있음)
     @Bean
     public ItemReader itemReader() {
         return new FlatFileItemReaderBuilder<OriginVOC>()
@@ -53,7 +52,7 @@ public class batchJob {
                 .resource(new ClassPathResource("/filtered_data.csv"))
                 .fieldSetMapper(new BeanWrapperFieldSetMapper<>())
                 .targetType(OriginVOC.class)
-                .linesToSkip(1) // 첫번째 행은 건너뜀(컬럼명은 건너뜀)
+                .linesToSkip(1) // 첫번째 행(컬럼명)은 건너뜀
                 .delimited().delimiter(",") // 구분자 기호 ,로 설정
                 .names( "vocDvn", "receNo", "dealStat", "dealDtlStat", "cstNo", "cstNm", "cstRcgnNo",
                         "email", "hp", "telNo", "faxNo", "postNo", "addrBase", "addrDtl", "openYn",
