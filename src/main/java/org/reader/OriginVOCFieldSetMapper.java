@@ -34,7 +34,7 @@ public class OriginVOCFieldSetMapper implements FieldSetMapper<OriginVOC> {
         vo.setVocNotes(fieldSet.readString("VOC_NOTES"));
         vo.setImprDire(fieldSet.readString("IMPR_DIRE"));
         vo.setHopeEfct(fieldSet.readString("HOPE_EFCT"));
-        vo.setPersCnt(fieldSet.readInt("PERS_CNT"));
+        vo.setPersCnt(fieldSet.readString("PERS_CNT"));
         vo.setInfoPuseAgrYn(fieldSet.readString("INFO_PUSE_AGR_YN"));
         vo.setInfoPuseAgrDd(fieldSet.readString("INFO_PUSE_AGR_DD"));
         vo.setReceChnl(fieldSet.readString("RECE_CHNL"));
@@ -65,7 +65,7 @@ public class OriginVOCFieldSetMapper implements FieldSetMapper<OriginVOC> {
         vo.setDealType(fieldSet.readString("DEAL_TYPE"));
         vo.setRelapYn(fieldSet.readString("RELAP_YN"));
         vo.setSameVocYn(fieldSet.readString("SAME_VOC_YN"));
-        vo.setDealDtCnt(fieldSet.readInt("DEAL_DTCNT"));
+        vo.setDealDtCnt(fieldSet.readString("DEAL_DTCNT"));
         vo.setDealApvUser(fieldSet.readString("DEAL_APV_USER"));
         vo.setVocApvUser(fieldSet.readString("VOC_APV_USER"));
         vo.setCancelYn(fieldSet.readString("CANCEL_YN"));
