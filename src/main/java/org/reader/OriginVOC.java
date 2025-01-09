@@ -29,7 +29,7 @@ public class OriginVOC {
     private String vocNotes;         // VOC_NOTES
     private String imprDire;         // IMPR_DIRE
     private String hopeEfct;         // HOPE_EFCT
-    private Integer persCnt;         // PERS_CNT
+    private String persCnt;         // PERS_CNT
     private String infoPuseAgrYn;    // INFO_PUSE_AGR_YN
     private String infoPuseAgrDd;    // INFO_PUSE_AGR_DD
     private String receChnl;         // RECE_CHNL
@@ -60,7 +60,7 @@ public class OriginVOC {
     private String dealType;         // DEAL_TYPE
     private String relapYn;          // RELAP_YN
     private String sameVocYn;        // SAME_VOC_YN
-    private Integer dealDtCnt;       // DEAL_DTCNT
+    private String dealDtCnt;       // DEAL_DTCNT
     private String dealApvUser;      // DEAL_APV_USER
     private String vocApvUser;       // VOC_APV_USER
     private String cancelYn;         // CANCEL_YN
@@ -75,5 +75,4 @@ public class OriginVOC {
     private String dealDepUser;      // DEAL_DEP_USER
     private String dealDepbNm;       // DEAL_DEPB_NM
     private String dealDepcNm;       // DEAL_DEPC_NM
-
 }
