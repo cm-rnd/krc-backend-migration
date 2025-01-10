@@ -4,6 +4,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class VocKrccAntiCorruption {
     private Long id;
 

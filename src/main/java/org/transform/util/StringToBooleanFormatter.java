@@ -1,6 +1,6 @@
 package org.transform.util;
 
-public class StringToBooleanConverter {
+public class StringToBooleanFormatter {
 
     public static Boolean convert(String value) {
         if (value == null) {

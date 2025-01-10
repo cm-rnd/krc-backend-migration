@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum KrccVocType {
+public enum KrccVocTypeMapper {
     // 민원 안내
     NONE("미사용 VOC 유형", 0L),
     CIVIL_COMPLAINT_GUIDE("민원", 2L),

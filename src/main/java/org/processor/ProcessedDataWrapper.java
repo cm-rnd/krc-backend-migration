@@ -1,6 +1,7 @@
 package org.processor;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.domain.*;
@@ -8,6 +9,7 @@ import org.domain.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ProcessedDataWrapper {
     private Voc voc;
     private Answer answer;

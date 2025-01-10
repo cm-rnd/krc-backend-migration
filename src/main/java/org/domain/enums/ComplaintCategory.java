@@ -152,7 +152,6 @@ public enum ComplaintCategory {
     private final ComplaintCategory parentCategory;
     private final int hierarchyLevel;
     private final int order;
-
     // 자식카테고리
     private final List<ComplaintCategory> childCategories;
 
