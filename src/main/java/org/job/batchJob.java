@@ -1,6 +1,7 @@
 package org.job;
 
 import lombok.RequiredArgsConstructor;
+import org.processor.ProcessedDataWrapper;
 import org.reader.OriginVOC;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -8,21 +9,22 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.Chunk;
-import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.separator.DefaultRecordSeparatorPolicy;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.support.ClassifierCompositeItemProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.beans.PropertyEditorSupport;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Configuration
 @RequiredArgsConstructor
@@ -41,12 +43,13 @@ public class batchJob {
     @Bean
     public Step step1(){
         return new StepBuilder("step1", jobRepository)
-                .chunk(100, transactionManager)
+                .<OriginVOC, ProcessedDataWrapper>chunk(100, transactionManager)
+
                 .reader(itemReader())
-                .writer(new ItemWriter<Object>() {
+                .writer(new ItemWriter<ProcessedDataWrapper>() {
                     @Override
-                    public void write(Chunk<?> items) throws Exception {
-                        System.out.println("items = " + items);
+                    public void write(Chunk<? extends ProcessedDataWrapper> chunk) throws Exception {
+
                     }
                 })
                 .build();

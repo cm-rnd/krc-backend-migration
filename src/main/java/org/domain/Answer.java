@@ -17,7 +17,7 @@ public class Answer {
     private Long writerId;
     private String title;
     private boolean isPublicWithinCompany;  // 사내 공개 여부
-    private String complaintClassification;     // 민원 분류
+    private Integer complaintClassificationId;     // 민원 분류
     private String complaintType;     // 민원 유형
     private String complaintCategory;     // 민원 분야
     private String processingType;     // 처리 유형

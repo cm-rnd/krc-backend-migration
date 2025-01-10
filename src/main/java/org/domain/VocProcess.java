@@ -40,5 +40,4 @@ public class VocProcess {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
 }

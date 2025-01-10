@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ReceiptChannel {
+public enum ReceiptChannelMapper {
     KRCC_HOMEPAGE("농어촌 홈페이지", 1L),
     E_PEOPLE("국민신문고", 2L),
     MAIL("우편", 3L),
@@ -17,4 +17,5 @@ public enum ReceiptChannel {
 
     private final String description;
     private final Long id;
+
 }
