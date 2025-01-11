@@ -1,20 +1,15 @@
 package org.transform;
 
 import org.domain.enums.ComplaintCategory;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ComplaintCategoryMapper {
-
     private static final Map<String, ComplaintCategory> inputToCategoryMap = new HashMap<>();
 
     static {
         for (ComplaintCategory category : ComplaintCategory.values()) {
-            if (category.getParentCategory() != null) {
-                String inputCode = generateCode(category);
-                inputToCategoryMap.put(inputCode, category);
-            }
+            String inputCode = generateCode(category);
+            inputToCategoryMap.put(inputCode, category);
         }
     }
 
@@ -22,16 +17,16 @@ public class ComplaintCategoryMapper {
         StringBuilder codeBuilder = new StringBuilder();
 
         ComplaintCategory current = category;
-        ComplaintCategory complaintCategory = current.getParentCategory().orElse(null);
-        while (complaintCategory != null) {
-            int orderIndex = complaintCategory.getChildCategories().indexOf(current);
-            codeBuilder.insert(0, (char) ('A' + orderIndex));
+        while (current.getParentCategory().isPresent()) {
 
-            current = complaintCategory;
-        }
+            int orderIndex = current.getParentCategory().get().getChildCategories().indexOf(current);
+            if(current.getChildCategories().isEmpty()) {
+                codeBuilder.append(category.getParentCategory().get().getChildCategories().indexOf(current)+1);
+            } else {
+                codeBuilder.insert(0, (char) ('A' + orderIndex));
+            }
 
-        if (category.getChildCategories().isEmpty()) {
-            codeBuilder.append(category.getOrder());
+            current = current.getParentCategory().get();
         }
 
         return codeBuilder.toString();
