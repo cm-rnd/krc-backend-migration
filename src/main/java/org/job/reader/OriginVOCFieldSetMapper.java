@@ -4,15 +4,15 @@ import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.validation.BindException;
 
-public class OriginVOCFieldSetMapper implements FieldSetMapper<OriginVOC> {
+public class OriginVOCFieldSetMapper implements FieldSetMapper<FilteredVOC> {
     @Override
-    public OriginVOC mapFieldSet(FieldSet fieldSet) throws BindException {
+    public FilteredVOC mapFieldSet(FieldSet fieldSet) throws BindException {
 
         if(fieldSet == null) {
             return null;
         }
 
-        OriginVOC vo = new OriginVOC();
+        FilteredVOC vo = new FilteredVOC();
 
         vo.setVocDvn(fieldSet.readString("VOC_DVN"));
         vo.setReceNo(fieldSet.readString("RECE_NO"));
