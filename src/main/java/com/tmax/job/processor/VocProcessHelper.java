@@ -5,10 +5,6 @@ import com.tmax.job.writer.FilteredVOC;
 import com.tmax.transform.*;
 import com.tmax.transform.util.FlexibleDateTimeFormatter;
 import com.tmax.transform.util.StringToBooleanFormatter;
-import org.domain.*;
-import tmax.domain.*;
-import tmax.transform.*;
-
 
 import java.util.Random;
 

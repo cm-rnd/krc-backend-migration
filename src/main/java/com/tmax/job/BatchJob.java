@@ -1,5 +1,6 @@
 package com.tmax.job;
 
+import com.tmax.job.jpa.FilteredVocRepository;
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.util.validation.ValidationException;
 import com.tmax.job.reader.OriginVOC;
@@ -48,9 +49,15 @@ import static com.tmax.valid.CommonValidation.validateRequiredFields;
 public class BatchJob {
 
     private final JobRepository jobRepository;
+
+    @Qualifier("transactionManager")
     private final PlatformTransactionManager transactionManager;
 
-   // private final FilteredVocRepository vocRepository;
+    @Qualifier("jdbcTransactionManager")
+    private final PlatformTransactionManager jdbcTransactionManager;
+
+    private final FilteredVocRepository vocRepository;
+
     @Qualifier("batchDataSource")
     private final DataSource batchDataSource;
     @Qualifier("resultDataSource")
