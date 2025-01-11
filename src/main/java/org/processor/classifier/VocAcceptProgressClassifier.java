@@ -1,14 +1,13 @@
 package org.processor.classifier;
 
 import org.processor.ProcessedDataWrapper;
-import org.job.reader.OriginVOC;
 import org.springframework.batch.item.ItemProcessor;
 
 /* 접수중 상태 */
-public class VocAcceptProgressClassifier implements ItemProcessor<OriginVOC, ProcessedDataWrapper> {
+public class VocAcceptProgressClassifier implements ItemProcessor<FilteredVOC, ProcessedDataWrapper> {
 
     @Override
-    public ProcessedDataWrapper process(OriginVOC originVOC) throws Exception {
+    public ProcessedDataWrapper process(FilteredVOC originVOC) throws Exception {
         return null;
     }
 }
