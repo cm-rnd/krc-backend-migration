@@ -1,5 +1,6 @@
 package org.config;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -23,7 +24,14 @@ public class DataSourceConfig {
     }
 
     @Bean(name = "resultDataSource")
-    @ConfigurationProperties(prefix = "datasource.result")
+    @ConfigurationProperties(prefix = "spring.datasource.result")
     public DataSource resultDataSource() {
         return DataSourceBuilder.create().build();
-    }}
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        return new DataSourceTransactionManager(batchDataSource());
+    }
+
+}

@@ -48,11 +48,8 @@ import static org.valid.CommonValidation.validateRequiredFields;
 public class BatchJob {
 
     private final JobRepository jobRepository;
+    private final FilteredVocRepository vocRepository;
     private final PlatformTransactionManager transactionManager;
-    @Qualifier("batchDataSource")
-    private final DataSource batchDataSource;
-    @Qualifier("resultDataSource")
-    private final DataSource resultDataSource;
 
 
     @Bean
@@ -129,7 +126,7 @@ public class BatchJob {
     }
 
     @Bean
-    public ItemReader<FilteredVOC> migrationItemReader() throws Exception {
+    public ItemReader<FilteredVOC> migrationItemReader(@Qualifier("batchDataSource") DataSource batchDataSource) throws Exception {
 
         return new JdbcPagingItemReaderBuilder<FilteredVOC>()
                 .name("migrationItemReader")

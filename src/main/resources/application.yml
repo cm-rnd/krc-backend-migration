@@ -3,11 +3,17 @@ spring:
     name: bi-krcc-migration
 
   datasource:
-    url: jdbc:mysql://localhost:3306/bi_krcc_migration?useUnicode=true&characterEncoding=utf8
-    username: batch
-    password: batchbye
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    batch:
+      url: jdbc:mysql://localhost:3306/bi_krcc_migration?useUnicode=true&characterEncoding=utf8
+      username: batch
+      password: batchbye
+      driver-class-name: com.mysql.cj.jdbc.Driver
 
+    result:
+      jdbc-url: jdbc:mysql://localhost:3307/bi_krcc_migration
+      username: batch
+      password: batchbye
+      driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update # 개발 중: update, 운영 환경: validate 또는 none
@@ -20,12 +26,6 @@ spring:
 
 
 
-datasource:
-  result:
-    jdbc-url: jdbc:mysql://localhost:3307/bi_krcc_migration
-    username: batch
-    password: batchbye
-    driver-class-name: com.mysql.cj.jdbc.Driver
 #---
 #spring:
 #  config:
