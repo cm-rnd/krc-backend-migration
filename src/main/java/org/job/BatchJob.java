@@ -5,7 +5,7 @@ import net.sf.jsqlparser.util.validation.ValidationException;
 import org.job.jpa.FilteredVocRepository;
 import org.job.reader.OriginVOC;
 import org.job.writer.FilteredVOC;
-import org.processor.ProcessedDataWrapper;
+import org.job.processor.ProcessedDataWrapper;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.SkipListener;
 import org.springframework.batch.core.Step;
@@ -38,7 +38,7 @@ import java.util.Map;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import static org.processor.VocProcessHelper.*;
+import static org.job.processor.VocProcessHelper.*;
 import static org.valid.CaseValidation.*;
 import static org.valid.CommonValidation.validateRequiredFields;
 

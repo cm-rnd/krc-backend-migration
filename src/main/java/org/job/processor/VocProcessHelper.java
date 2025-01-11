@@ -1,4 +1,4 @@
-package org.processor;
+package org.job.processor;
 
 import org.domain.*;
 import org.job.writer.FilteredVOC;
