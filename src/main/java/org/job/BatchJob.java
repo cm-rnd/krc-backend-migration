@@ -2,10 +2,8 @@ package org.job;
 
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.util.validation.ValidationException;
-import org.job.jpa.FilteredVocRepository;
-import org.job.writer.FilteredVOC;
 import org.processor.ProcessedDataWrapper;
-import org.job.reader.OriginVOC;
+import org.reader.OriginVOC;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.SkipListener;
 import org.springframework.batch.core.Step;
@@ -25,7 +23,7 @@ import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.separator.DefaultRecordSeparatorPolicy;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -35,8 +33,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.FileWriter;
-import java.io.IOException;
 
 import static org.valid.CaseValidation.*;
 import static org.valid.CommonValidation.validateRequiredFields;
@@ -49,7 +45,6 @@ public class BatchJob {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     @Qualifier("batchDataSource")
-    private final FilteredVocRepository vocRepository;
     private final DataSource batchDataSource;
     @Qualifier("resultDataSource")
     private final DataSource resultDataSource;
@@ -66,76 +61,66 @@ public class BatchJob {
     @Bean
     public Step validationStep() {
         return new StepBuilder("validationStep", jobRepository)
-                .<OriginVOC, FilteredVOC>chunk(100, transactionManager)
-                .reader(originVocReader())
-                .processor(validationProcessor())
-                .writer(filiteredDataWriter())
-                .faultTolerant()
-                .skip(ValidationException.class)
-                .listener(skipListener())
+                .<OriginVOC, OriginVOC>chunk(100, transactionManager)
+                .reader(itemReader()) // 데이터를 읽는 Reader
+                .processor(validationProcessor()) // 검증 로직을 처리하는 Processor
+                .writer(validationWriter()) // 검증된 데이터를 처리하는 Writer
+                .faultTolerant() // 검증 실패 처리
+                .skip(ValidationException.class) // Validation 실패 데이터 무시
+                .skipLimit(1000)
                 .build();
     }
 
     @Bean
-    public ItemProcessor<OriginVOC, FilteredVOC> validationProcessor() {
+    public ItemProcessor<OriginVOC, OriginVOC> validationProcessor() {
         return originVOC -> {
             validateRequiredFields(originVOC);
             validateCaseVocStatus(originVOC);
-
-            FilteredVOC filteredVOC = new FilteredVOC();
-            BeanUtils.copyProperties(originVOC, filteredVOC); // 동일한 필드 복사
-            return filteredVOC;
+            return originVOC;
         };
     }
 
     @Bean
-    public ItemWriter<FilteredVOC> filiteredDataWriter() {
+    public ItemWriter<OriginVOC> validationWriter() {
         return items -> {
-            vocRepository.saveAll(items);
+            // 검증된 데이터 저장 또는 로깅 (파일, DB 등)
+            items.forEach(item -> System.out.println("Validated Data: " + item));
         };
     }
 
-
     @Bean
-    public SkipListener<OriginVOC, FilteredVOC> skipListener() {
-        return new SkipListener<OriginVOC, FilteredVOC>() {
+    public SkipListener<OriginVOC, ProcessedDataWrapper> validationSkipListener() {
+        return new SkipListener<>() {
             @Override
             public void onSkipInProcess(OriginVOC item, Throwable t) {
-                System.out.println("Skipped item: " + item);
-                logSkippedItem(item, t);
-            }
-
-            private void logSkippedItem(OriginVOC item, Throwable t) {
-                try (FileWriter writer = new FileWriter("skipped_items.csv", true)) {
-                    writer.write(item.toString() + ", Reason: " + t.getMessage() + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                System.err.println("검증 실패: " + item + ", 이유: " + t.getMessage());
             }
         };
     }
+
+
     @Bean
     public Step migrationStep() throws Exception {
         return new StepBuilder("migrationStep", jobRepository)
-                .<FilteredVOC, ProcessedDataWrapper>chunk(1000, transactionManager)
+                .<OriginVOC, ProcessedDataWrapper>chunk(1000, transactionManager)
                 .reader(migrationItemReader())
                 .writer(new ItemWriter<ProcessedDataWrapper>() {
                     @Override
                     public void write(Chunk<? extends ProcessedDataWrapper> chunk) throws Exception {
-                        System.out.println("chunk==========" + chunk);
+
                     }
                 })
                 .build();
     }
 
     @Bean
-    public ItemReader<FilteredVOC> migrationItemReader() throws Exception {
+    public ItemReader<OriginVOC> migrationItemReader() throws Exception {
 
-        return new JdbcPagingItemReaderBuilder<FilteredVOC>()
+        return new JdbcPagingItemReaderBuilder<OriginVOC>()
                 .name("migrationItemReader")
                 .dataSource(batchDataSource)
                 .pageSize(100)
-                .rowMapper(new BeanPropertyRowMapper<>(FilteredVOC.class))
+                .rowMapper(new BeanPropertyRowMapper<>(OriginVOC.class))
                 .queryProvider(queryProvider())
                 .build();
     }
@@ -145,9 +130,8 @@ public class BatchJob {
 
         SqlPagingQueryProviderFactoryBean queryProvider = new SqlPagingQueryProviderFactoryBean();
         queryProvider.setDataSource(batchDataSource);
-        queryProvider.setSelectClause("*"); // 필요한 컬럼
-        //queryProvider.setSelectClause("vocDvn, receNo, dealStat, dealDtlStat, cstNo, cstNm, cstRcgnNo, email, hp, telNo, faxNo, postNo, addrBase, addrDtl, openYn, vocTit, vocCntn, vocNotes, imprDire, hopeEfct, persCnt, infoPuseAgrYn, infoPuseAgrDd, receChnl, receDvn, receYmd, receUser, receUserNm, receDepCd, receDepNm, vocType, vocFld, vocKd, dealDday, asgnVocYn, getMn, transMtr, dealDepCd, dealDepNm, dealDepSubCd, dealDepSubNm, dealYmd, dealUser, answNotes, answCntn, docNo, solvDvn, rprtMeth, dealType, relapYn, sameVocYn, dealDtCnt, dealApvUser, vocApvUser, cancelYn, cancelResn, cancelDttm, epoDvn, delYn, regUser, regDd, updtUser, updtDd, dealDepUser, dealDepbNm, dealDepcNm"); // 필요한 컬럼
-        queryProvider.setFromClause("from filteredvoc");
+        queryProvider.setSelectClause("vocDvn, receNo, dealStat, dealDtlStat, cstNo, cstNm, cstRcgnNo, email, hp, telNo, faxNo, postNo, addrBase, addrDtl, openYn, vocTit, vocCntn, vocNotes, imprDire, hopeEfct, persCnt, infoPuseAgrYn, infoPuseAgrDd, receChnl, receDvn, receYmd, receUser, receUserNm, receDepCd, receDepNm, vocType, vocFld, vocKd, dealDday, asgnVocYn, getMn, transMtr, dealDepCd, dealDepNm, dealDepSubCd, dealDepSubNm, dealYmd, dealUser, answNotes, answCntn, docNo, solvDvn, rprtMeth, dealType, relapYn, sameVocYn, dealDtCnt, dealApvUser, vocApvUser, cancelYn, cancelResn, cancelDttm, epoDvn, delYn, regUser, regDd, updtUser, updtDd, dealDepUser, dealDepbNm, dealDepcNm"); // 필요한 컬럼
+        queryProvider.setFromClause("from origin_voc");
 
         Map<String, Order> sortKeys = new HashMap<>();
         sortKeys.put("id", Order.ASCENDING);
@@ -158,7 +142,7 @@ public class BatchJob {
 
 
     @Bean
-    public FlatFileItemReader<OriginVOC> originVocReader() {
+    public FlatFileItemReader<OriginVOC> itemReader() {
         FlatFileItemReader<OriginVOC> reader = new FlatFileItemReader<>();
         reader.setResource(new ClassPathResource("/filtered_data.csv"));
         reader.setLinesToSkip(1);

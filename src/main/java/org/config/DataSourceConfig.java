@@ -1,6 +1,7 @@
 package org.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,7 @@ public class DataSourceConfig {
 
     @Primary
     @Bean(name = "batchDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource")
+    @ConfigurationProperties(prefix = "spring.datasource.batch")
     public DataSource batchDataSource() {
         return DataSourceBuilder.create().build();
     }
@@ -25,21 +26,4 @@ public class DataSourceConfig {
     @ConfigurationProperties(prefix = "datasource.result")
     public DataSource resultDataSource() {
         return DataSourceBuilder.create().build();
-    }
-
-    @Bean
-    public PlatformTransactionManager transactionManager() {
-        return new DataSourceTransactionManager(resultDataSource());
-    }
-
-    @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
-    @Bean
-    public JdbcTemplate fromJdbcTemplate() {
-        return new JdbcTemplate(batchDataSource());
-    }
-
-}
+    }}

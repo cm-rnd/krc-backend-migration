@@ -17,6 +17,15 @@ spring:
       hibernate:
         format_sql: true
 
+
+
+
+datasource:
+  result:
+    jdbc-url: jdbc:mysql://localhost:3307/bi_krcc_migration
+    username: batch
+    password: batchbye
+    driver-class-name: com.mysql.cj.jdbc.Driver
 #---
 #spring:
 #  config:
