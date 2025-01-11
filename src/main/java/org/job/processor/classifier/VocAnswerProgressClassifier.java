@@ -1,6 +1,6 @@
-package org.processor.classifier;
+package org.job.processor.classifier;
 
-import org.processor.ProcessedDataWrapper;
+import org.job.processor.ProcessedDataWrapper;
 import org.springframework.batch.item.ItemProcessor;
 
 

@@ -1,5 +1,6 @@
 package org.job.reader;
 
+import org.job.writer.FilteredVOC;
 import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.validation.BindException;

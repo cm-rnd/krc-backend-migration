@@ -1,4 +1,4 @@
-package org.processor;
+package org.job.processor;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
