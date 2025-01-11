@@ -17,6 +17,12 @@ spring:
       hibernate:
         format_sql: true
 
+datasource:
+  from:
+    jdbc-url: jdbc:mysql://localhost:3306/bi_krcc_migration_test?useUnicode=true&characterEncoding=utf8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 1234
 #---
 #spring:
 #  config:

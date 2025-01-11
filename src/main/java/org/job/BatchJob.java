@@ -2,7 +2,6 @@ package org.job;
 
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.util.validation.ValidationException;
-import org.job.jpa.FilteredVocRepository;
 import org.job.reader.OriginVOC;
 import org.job.writer.FilteredVOC;
 import org.job.processor.ProcessedDataWrapper;
@@ -26,6 +25,7 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.separator.DefaultRecordSeparatorPolicy;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -49,9 +49,13 @@ public class BatchJob {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
-    private final FilteredVocRepository vocRepository;
+
+   // private final FilteredVocRepository vocRepository;
+    @Qualifier("batchDataSource")
     private final DataSource batchDataSource;
+    @Qualifier("resultDataSource")
     private final DataSource resultDataSource;
+
 
     @Bean
     public Job migrationJob() throws Exception {
@@ -89,7 +93,7 @@ public class BatchJob {
     @Bean
     public ItemWriter<org.job.writer.FilteredVOC> filiteredDataWriter() {
         return items -> {
-            vocRepository.saveAll(items);
+            //vocRepository.saveAll(items);
         };
     }
 
