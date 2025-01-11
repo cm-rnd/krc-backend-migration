@@ -1,6 +1,7 @@
 package org.job.processor.classifier;
 
 import org.job.processor.ProcessedDataWrapper;
+import org.job.writer.FilteredVOC;
 import org.springframework.batch.item.ItemProcessor;
 
 /* 답변완료 상태 */
