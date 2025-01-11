@@ -1,6 +1,6 @@
 package org.processor;
 
-import org.reader.OriginVOC;
+import org.job.reader.OriginVOC;
 import org.springframework.batch.item.ItemProcessor;
 
 import static org.processor.VocProcessHelper.*;

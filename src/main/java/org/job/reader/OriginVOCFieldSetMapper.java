@@ -1,4 +1,4 @@
-package org.reader;
+package org.job.reader;
 
 import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.FieldSet;

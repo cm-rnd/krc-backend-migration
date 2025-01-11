@@ -1,4 +1,4 @@
-package org.reader;
+package org.job.reader;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OriginVOC {
-
     private String vocDvn;           // VOC_DVN
     private String receNo;           // RECE_NO
     private String dealStat;         // DEAL_STAT
