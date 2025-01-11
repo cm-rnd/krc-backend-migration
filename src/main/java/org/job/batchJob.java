@@ -12,19 +12,25 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.Order;
+import org.springframework.batch.item.database.PagingQueryProvider;
+import org.springframework.batch.item.database.builder.JdbcPagingItemReaderBuilder;
+import org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.separator.DefaultRecordSeparatorPolicy;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-import org.springframework.batch.item.support.ClassifierCompositeItemProcessor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.valid.CaseValidation;
 
+import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,9 +44,11 @@ public class batchJob {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
+    private final DataSource batchDataSource;
+    private final DataSource resultDataSource;
 
     @Bean
-    public Job migrationJob() {
+    public Job migrationJob() throws Exception {
         return new JobBuilder("migrationJob", jobRepository)
                 .start(validationStep())
                 .next(migrationStep())
@@ -89,10 +97,10 @@ public class batchJob {
 
 
     @Bean
-    public Step migrationStep() {
+    public Step migrationStep() throws Exception {
         return new StepBuilder("migrationStep", jobRepository)
-                .<OriginVOC, ProcessedDataWrapper>chunk(100, transactionManager)
-                .reader(itemReader())
+                .<OriginVOC, ProcessedDataWrapper>chunk(1000, transactionManager)
+                .reader(migrationItemReader())
                 .writer(new ItemWriter<ProcessedDataWrapper>() {
                     @Override
                     public void write(Chunk<? extends ProcessedDataWrapper> chunk) throws Exception {
@@ -100,6 +108,33 @@ public class batchJob {
                     }
                 })
                 .build();
+    }
+
+    @Bean
+    public ItemReader<OriginVOC> migrationItemReader() throws Exception {
+
+        return new JdbcPagingItemReaderBuilder<OriginVOC>()
+                .name("migrationItemReader")
+                .dataSource(batchDataSource)
+                .pageSize(100)
+                .rowMapper(new BeanPropertyRowMapper<>(OriginVOC.class))
+                .queryProvider(queryProvider())
+                .build();
+    }
+
+    @Bean
+    public PagingQueryProvider queryProvider() throws Exception {
+
+        SqlPagingQueryProviderFactoryBean queryProvider = new SqlPagingQueryProviderFactoryBean();
+        queryProvider.setDataSource(batchDataSource);
+        queryProvider.setSelectClause("vocDvn, receNo, dealStat, dealDtlStat, cstNo, cstNm, cstRcgnNo, email, hp, telNo, faxNo, postNo, addrBase, addrDtl, openYn, vocTit, vocCntn, vocNotes, imprDire, hopeEfct, persCnt, infoPuseAgrYn, infoPuseAgrDd, receChnl, receDvn, receYmd, receUser, receUserNm, receDepCd, receDepNm, vocType, vocFld, vocKd, dealDday, asgnVocYn, getMn, transMtr, dealDepCd, dealDepNm, dealDepSubCd, dealDepSubNm, dealYmd, dealUser, answNotes, answCntn, docNo, solvDvn, rprtMeth, dealType, relapYn, sameVocYn, dealDtCnt, dealApvUser, vocApvUser, cancelYn, cancelResn, cancelDttm, epoDvn, delYn, regUser, regDd, updtUser, updtDd, dealDepUser, dealDepbNm, dealDepcNm"); // 필요한 컬럼
+        queryProvider.setFromClause("from origin_voc");
+
+        Map<String, Order> sortKeys = new HashMap<>();
+        sortKeys.put("id", Order.ASCENDING);
+
+        queryProvider.setSortKeys(sortKeys);
+        return queryProvider.getObject();
     }
 
 
