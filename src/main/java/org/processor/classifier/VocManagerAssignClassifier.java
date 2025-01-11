@@ -1,7 +1,7 @@
 package org.processor.classifier;
 
 import org.processor.ProcessedDataWrapper;
-import org.reader.OriginVOC;
+import org.job.reader.OriginVOC;
 import org.springframework.batch.item.ItemProcessor;
 
 /* 배정중 상태 */

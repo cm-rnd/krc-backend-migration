@@ -1,7 +1,7 @@
 package org.processor;
 
 import org.domain.*;
-import org.reader.OriginVOC;
+import org.job.reader.OriginVOC;
 
 
 import java.util.Random;
