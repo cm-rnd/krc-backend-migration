@@ -1,9 +1,11 @@
 package org.job;
 
 import lombok.RequiredArgsConstructor;
+import net.sf.jsqlparser.util.validation.ValidationException;
 import org.processor.ProcessedDataWrapper;
 import org.reader.OriginVOC;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.SkipListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
@@ -21,9 +23,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.valid.CaseValidation;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.valid.CaseValidation.*;
+import static org.valid.CommonValidation.validateRequiredFields;
 
 
 @Configuration
@@ -36,15 +42,56 @@ public class batchJob {
     @Bean
     public Job migrationJob() {
         return new JobBuilder("migrationJob", jobRepository)
-                .start(step1())
+                .start(validationStep())
+                .next(migrationStep())
                 .build();
     }
 
     @Bean
-    public Step step1(){
-        return new StepBuilder("step1", jobRepository)
-                .<OriginVOC, ProcessedDataWrapper>chunk(100, transactionManager)
+    public Step validationStep() {
+        return new StepBuilder("validationStep", jobRepository)
+                .<OriginVOC, OriginVOC>chunk(100, transactionManager)
+                .reader(itemReader()) // 데이터를 읽는 Reader
+                .processor(validationProcessor()) // 검증 로직을 처리하는 Processor
+                .writer(validationWriter()) // 검증된 데이터를 처리하는 Writer
+                .faultTolerant() // 검증 실패 처리
+                .skip(ValidationException.class) // Validation 실패 데이터 무시
+                .skipLimit(1000)
+                .build();
+    }
 
+    @Bean
+    public ItemProcessor<OriginVOC, OriginVOC> validationProcessor() {
+        return originVOC -> {
+            validateRequiredFields(originVOC);
+            validateCaseVocStatus(originVOC);
+            return originVOC;
+        };
+    }
+
+    @Bean
+    public ItemWriter<OriginVOC> validationWriter() {
+        return items -> {
+            // 검증된 데이터 저장 또는 로깅 (파일, DB 등)
+            items.forEach(item -> System.out.println("Validated Data: " + item));
+        };
+    }
+
+    @Bean
+    public SkipListener<OriginVOC, ProcessedDataWrapper> validationSkipListener() {
+        return new SkipListener<>() {
+            @Override
+            public void onSkipInProcess(OriginVOC item, Throwable t) {
+                System.err.println("검증 실패: " + item + ", 이유: " + t.getMessage());
+            }
+        };
+    }
+
+
+    @Bean
+    public Step migrationStep() {
+        return new StepBuilder("migrationStep", jobRepository)
+                .<OriginVOC, ProcessedDataWrapper>chunk(100, transactionManager)
                 .reader(itemReader())
                 .writer(new ItemWriter<ProcessedDataWrapper>() {
                     @Override
