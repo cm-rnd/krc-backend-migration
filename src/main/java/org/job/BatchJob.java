@@ -26,6 +26,7 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.separator.DefaultRecordSeparatorPolicy;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,6 +51,15 @@ public class BatchJob {
     private final JobRepository jobRepository;
     private final FilteredVocRepository vocRepository;
     private final PlatformTransactionManager transactionManager;
+
+
+    @Autowired
+    @Qualifier("batchDataSource")
+    private DataSource batchDataSource;
+
+    @Autowired
+    @Qualifier("targetDataSource")
+    private DataSource targetDataSource;
 
 
     @Bean
@@ -126,7 +136,7 @@ public class BatchJob {
     }
 
     @Bean
-    public ItemReader<FilteredVOC> migrationItemReader(@Qualifier("batchDataSource") DataSource batchDataSource) throws Exception {
+    public ItemReader<FilteredVOC> migrationItemReader() throws Exception {
 
         return new JdbcPagingItemReaderBuilder<FilteredVOC>()
                 .name("migrationItemReader")

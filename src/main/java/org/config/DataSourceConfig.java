@@ -1,6 +1,10 @@
 package org.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.support.DefaultBatchConfiguration;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -15,23 +19,30 @@ import javax.sql.DataSource;
 
 @Configuration
 public class DataSourceConfig {
-
-    @Primary
-    @Bean(name = "batchDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource.batch")
-    public DataSource batchDataSource() {
+    @Bean
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
 
-    @Bean(name = "resultDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource.result")
-    public DataSource resultDataSource() {
+    @Bean
+    @ConfigurationProperties(prefix = "datasource.target")
+    public DataSource targetDataSource() {
         return DataSourceBuilder.create().build();
     }
 
     @Bean
     public PlatformTransactionManager transactionManager() {
-        return new DataSourceTransactionManager(batchDataSource());
+        return new DataSourceTransactionManager(dataSource());
     }
 
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public JdbcTemplate targetJdbcTemplate() {
+        return new JdbcTemplate(targetDataSource());
+    }
 }
