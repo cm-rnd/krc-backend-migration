@@ -4,6 +4,8 @@ import com.tmax.domain.*;
 import com.tmax.job.writer.FilteredVOC;
 import com.tmax.transform.*;
 import com.tmax.transform.util.FlexibleDateTimeFormatter;
+import com.tmax.transform.util.NormalizeStringFormatter;
+import com.tmax.transform.util.NumberFormatter;
 import com.tmax.transform.util.StringToBooleanFormatter;
 
 import java.util.Random;
@@ -20,7 +22,7 @@ public class VocProcessHelper {
         return Voc.builder()
                 .vocClassification(vocClassification)
                 .vocNumber(filteredVOC.getReceNo())
-                .receiptType(String.valueOf(ReceiptTypeMapper.convertReceiptTypeByCode(filteredVOC.getReceDvn())))
+                .receiptType(String.valueOf(ReceiptTypeMapper.convertReceiptTypeByCode(NormalizeStringFormatter.normalizeCode(filteredVOC.getReceDvn()))))
                 .reporterName(filteredVOC.getCstNm())
                 .reportedAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getReceYmd()))
                 .phone(filteredVOC.getTelNo())
@@ -28,10 +30,10 @@ public class VocProcessHelper {
                 .fax(filteredVOC.getFaxNo())
                 .email(filteredVOC.getEmail())
                 .addressId(1L)
-                .receiptChannelId(Long.valueOf(filteredVOC.getReceChnl()))
+                .receiptChannelId(NumberFormatter.convert(filteredVOC.getReceChnl()))
                 .title(filteredVOC.getVocTit())
                 .contents(filteredVOC.getVocCntn())
-                .registerId(Long.valueOf(filteredVOC.getRegUser()))
+                .registerId(NumberFormatter.convert(filteredVOC.getRegUser()))
                 .registeredAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getReceYmd()))
                 .delete(StringToBooleanFormatter.convertOrDefault(filteredVOC.getDelYn(), false))
                 .createdAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getRegDd()))
@@ -48,21 +50,21 @@ public class VocProcessHelper {
 
     private static VocProcess createVocProcess(FilteredVOC filteredVOC) {
         return VocProcess.builder()
-                .statusCode(String.valueOf(StatusCodeMapper.mapDealStatToNowValue(filteredVOC.getDealStat())))
-                .vocTypeId(Long.valueOf(filteredVOC.getVocDvn()))
+                .statusCode(String.valueOf(StatusCodeMapper.mapDealStatToNowValue(NormalizeStringFormatter.normalizeCode(filteredVOC.getDealStat()))))
+                .vocTypeId(NumberFormatter.convert(filteredVOC.getVocDvn()))
                 .vocTypeOriginName(filteredVOC.getVocDvn())
-                .mainReceptionistId(Long.valueOf(filteredVOC.getReceUser()))
-                .subReceptionistId(Long.valueOf(filteredVOC.getReceUser()))
+                .mainReceptionistId(NumberFormatter.convert(filteredVOC.getReceUser()))
+                .subReceptionistId(NumberFormatter.convert(filteredVOC.getReceUser()))
                 .dueDate(FlexibleDateTimeFormatter.parseLocalDate(filteredVOC.getDealDday()))
                 .dueDateChangeReason(null)
-                .organizationAssignerId(Long.valueOf(filteredVOC.getDealDepUser()))
-                .organizationId(Long.valueOf(filteredVOC.getDealDepCd()))
+                .organizationAssignerId(NumberFormatter.convert(filteredVOC.getDealDepUser()))
+                .organizationId(NumberFormatter.convert(filteredVOC.getDealDepCd()))
                 .organizationName("임의 생성")
                 .organizationPath("Root")
                 .organizationLevel(1L)
-                .mainAssignerId(Long.valueOf(filteredVOC.getDealUser()))
-                .subAssignerId(Long.valueOf(filteredVOC.getDealUser()))
-                .managerId(Long.valueOf(filteredVOC.getDealDepUser()))
+                .mainAssignerId(NumberFormatter.convert(filteredVOC.getDealUser()))
+                .subAssignerId(NumberFormatter.convert(filteredVOC.getDealUser()))
+                .managerId(NumberFormatter.convert(filteredVOC.getDealDepUser()))
                 .managerName(filteredVOC.getDealDepUser())
                 .createdAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getRegDd()))
                 .updatedAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getUpdtDd()))
@@ -117,7 +119,7 @@ public class VocProcessHelper {
     private static VocResultNotiTypeRelation createVocResultNotiTypeRelation(FilteredVOC filteredVOC) {
 
         return VocResultNotiTypeRelation.builder()
-                .notificationType(String.valueOf(NotificationTypeMapper.convertToNotificationType(filteredVOC.getRprtMeth())))
+                .notificationType(String.valueOf(NotificationTypeMapper.convertToNotificationType(NormalizeStringFormatter.normalizeCode(filteredVOC.getRprtMeth()))))
                 .build();
     }
 
@@ -130,7 +132,7 @@ public class VocProcessHelper {
     private static VocProgressNotiTypeRelation createVocProgressNotiTypeRelation(FilteredVOC filteredVOC) {
 
         return VocProgressNotiTypeRelation.builder()
-                .notificationType(String.valueOf(NotificationTypeMapper.convertToNotificationType(filteredVOC.getRprtMeth())))
+                .notificationType(String.valueOf(NotificationTypeMapper.convertToNotificationType(NormalizeStringFormatter.normalizeCode(filteredVOC.getRprtMeth()))))
                 .build();
     }
 
@@ -147,20 +149,21 @@ public class VocProcessHelper {
         Integer complaintClassificationId = filteredVOC.getVocDvn().equals("10") ?randomValue : null;
 
         return Answer.builder()
-                .writerId(Long.valueOf(filteredVOC.getDealUser()))
+                .writerId(NumberFormatter.convert(filteredVOC.getDealUser()))
                 .title(filteredVOC.getAnswNotes())
                 .isPublicWithinCompany(StringToBooleanFormatter.convertOrDefault(filteredVOC.getOpenYn(), true))
                 .complaintClassificationId(complaintClassificationId)
-                .complaintType(String.valueOf(ComplaintTypeMapper.convertComplaintTypeByCode(filteredVOC.getVocType())))
+                .complaintType(String.valueOf(ComplaintTypeMapper.convertComplaintTypeByCode(NormalizeStringFormatter.normalizeCode(filteredVOC.getVocType()))))
                 .complaintCategory(String.valueOf(ComplaintCategoryMapper.getCategoryByInput(filteredVOC.getVocFld())))
-                .processingType(String.valueOf(ProcessingTypeMapper.convertProcessingTypeByCode(filteredVOC.getDealType())))
-                .resolutionStatus(String.valueOf(ResolutionStatusMapper.convertResolutionStatusByCode(filteredVOC.getSolvDvn())))
-                .notificationMethod(String.valueOf(NotificationTypeMapper.convertToNotificationType(filteredVOC.getRprtMeth())))
+                .processingType(String.valueOf(ProcessingTypeMapper.convertProcessingTypeByCode(NormalizeStringFormatter.normalizeCode(filteredVOC.getDealType()))))
+                .resolutionStatus(String.valueOf(ResolutionStatusMapper.convertResolutionStatusByCode(NormalizeStringFormatter.normalizeCode(filteredVOC.getSolvDvn()))))
+                .notificationMethod(String.valueOf(NotificationTypeMapper.convertToNotificationType(NormalizeStringFormatter.normalizeCode(filteredVOC.getRprtMeth()))))
                 .isSameComplaint(StringToBooleanFormatter.convertOrDefault(filteredVOC.getSameVocYn(), true))
                 .isReoccurring(StringToBooleanFormatter.convertOrDefault(filteredVOC.getRelapYn(), true))
                 .content(filteredVOC.getAnswCntn())
                 .createdAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getRegDd()))
                 .updatedAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getRegDd()))
+                .hits(1L)
                 .build();
     }
 

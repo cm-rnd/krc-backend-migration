@@ -12,7 +12,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
@@ -31,13 +30,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.sql.PreparedStatement;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tmax.job.processor.VocProcessHelper.*;
 import static com.tmax.valid.CaseValidation.*;
@@ -57,6 +61,9 @@ public class BatchJob {
     private final PlatformTransactionManager jdbcTransactionManager;
 
     private final FilteredVocRepository vocRepository;
+
+    @Qualifier("resultJdbcTemplate")
+    private final JdbcTemplate resultJdbcTemplate;
 
     @Qualifier("batchDataSource")
     private final DataSource batchDataSource;
@@ -129,16 +136,12 @@ public class BatchJob {
                 .<FilteredVOC, ProcessedDataWrapper>chunk(1000, transactionManager)
                 .reader(migrationItemReader())
                 .processor(migrationItemProcessor())
-                .writer(new ItemWriter<ProcessedDataWrapper>() {
-                    @Override
-                    public void write(Chunk<? extends ProcessedDataWrapper> chunk) throws Exception {
-                        System.out.println("chunk==========" + chunk);
-                    }
-                })
+                .writer(migrationItemWriter())
                 .build();
     }
 
-    private ItemProcessor<FilteredVOC, ? extends ProcessedDataWrapper> migrationItemProcessor() {
+    @Bean
+    public ItemProcessor<FilteredVOC, ? extends ProcessedDataWrapper> migrationItemProcessor() {
         return filteredVoc -> {
             ProcessedDataWrapper dataWrapper = new ProcessedDataWrapper();
             switch (filteredVoc.getDealStat()) {
@@ -188,6 +191,182 @@ public class BatchJob {
         queryProvider.setSortKeys(sortKeys);
         return queryProvider.getObject();
     }
+
+    @Bean
+    public ItemWriter<ProcessedDataWrapper> migrationItemWriter() {
+        return items -> {
+            for (ProcessedDataWrapper dataWrapper : items) {
+                AtomicReference<Long> vocIdRef = new AtomicReference<>();
+                AtomicReference<Long> vocProcessIdRef = new AtomicReference<>();
+
+
+
+                if (dataWrapper.getVoc() != null) {
+                    GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+
+                    resultJdbcTemplate.update(connection -> {
+                        PreparedStatement ps = connection.prepareStatement(
+                                "INSERT INTO VOC (VOC_CLASSIFICATION, VOC_MANUAL_GENERAL_ID, VOC_MANUAL_ANTI_CORRUPTION_ID, VOC_KRCC_GENERAL_ID, " +
+                                        "VOC_KRCC_ANTI_CORRUPTION_ID, VOC_NUMBER, REPORTER_NAME, REPORTED_AT, PHONE, MOBILE, FAX, EMAIL, " +
+                                        "ADDRESS_ID, RECEIPT_TYPE, TITLE, CONTENTS, REGISTER_ID, VOC_PROCESS_ID, DELETED, " +
+                                        "REGISTERED_AT, CREATED_AT, UPDATED_AT, NUMBER_OF_REPORTERS, HITS, RECEIPT_CHANNEL_ID) " +
+                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                new String[] { "ID" }
+                        );
+                        ps.setString(1, dataWrapper.getVoc().getVocClassification());
+                        ps.setObject(2, dataWrapper.getVoc().getVocManualGeneralId());
+                        ps.setObject(3, dataWrapper.getVoc().getVocManualAntiCorruptionId());
+                        ps.setObject(4, dataWrapper.getVoc().getVocKrccGeneralId());
+                        ps.setObject(5, dataWrapper.getVoc().getVocKrccAntiCorruptionId());
+                        ps.setString(6, dataWrapper.getVoc().getVocNumber());
+                        ps.setString(7, dataWrapper.getVoc().getReporterName());
+                        ps.setObject(8, dataWrapper.getVoc().getReportedAt());
+                        ps.setString(9, dataWrapper.getVoc().getPhone());
+                        ps.setString(10, dataWrapper.getVoc().getMobile());
+                        ps.setString(11, dataWrapper.getVoc().getFax());
+                        ps.setString(12, dataWrapper.getVoc().getEmail());
+                        ps.setObject(13, dataWrapper.getVoc().getAddressId());
+                        ps.setString(14, dataWrapper.getVoc().getReceiptType());
+                        ps.setString(15, dataWrapper.getVoc().getTitle());
+                        ps.setString(16, dataWrapper.getVoc().getContents());
+                        ps.setObject(17, dataWrapper.getVoc().getRegisterId());
+                        ps.setObject(18, dataWrapper.getVoc().getVocProcessId());
+                        ps.setBoolean(19, dataWrapper.getVoc().getDelete());
+                        ps.setObject(20, dataWrapper.getVoc().getRegisteredAt());
+                        ps.setObject(21, dataWrapper.getVoc().getCreatedAt());
+                        ps.setObject(22, dataWrapper.getVoc().getUpdatedAt());
+                        ps.setObject(23, dataWrapper.getVoc().getNumberOfReporters());
+                        ps.setObject(24, dataWrapper.getVoc().getHits());
+                        ps.setObject(25, dataWrapper.getVoc().getReceiptChannelId());
+                        return ps;
+                    }, keyHolder);
+
+                    vocIdRef.set(Objects.requireNonNull(keyHolder.getKey()).longValue());
+                }
+
+                if (dataWrapper.getAnswer() != null) {
+                    resultJdbcTemplate.update(
+                            "INSERT INTO ANSWER (VOC_ID, WRITER_ID, TITLE, IS_PUBLIC_WITHIN_COMPANY, COMPLAINT_CLASSIFICATION_ID, COMPLAINT_TYPE, " +
+                                    "COMPLAINT_CATEGORY, PROCESSING_TYPE, RESOLUTION_STATUS, NOTIFICATION_METHOD, IS_SAME_COMPLAINT, " +
+                                    "IS_REOCCURRING, CONTENT, CREATED_AT, UPDATED_AT, HITS) " +
+                                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            vocIdRef.get(),
+                            dataWrapper.getAnswer().getWriterId(),
+                            dataWrapper.getAnswer().getTitle(),
+                            dataWrapper.getAnswer().isPublicWithinCompany(),
+                            dataWrapper.getAnswer().getComplaintClassificationId(),
+                            dataWrapper.getAnswer().getComplaintType(),
+                            dataWrapper.getAnswer().getComplaintCategory(),
+                            dataWrapper.getAnswer().getProcessingType(),
+                            dataWrapper.getAnswer().getResolutionStatus(),
+                            dataWrapper.getAnswer().getNotificationMethod(),
+                            dataWrapper.getAnswer().getIsSameComplaint(),
+                            dataWrapper.getAnswer().getIsReoccurring(),
+                            dataWrapper.getAnswer().getContent(),
+                            dataWrapper.getAnswer().getCreatedAt(),
+                            dataWrapper.getAnswer().getUpdatedAt(),
+                            dataWrapper.getAnswer().getHits()
+                    );
+
+                }
+
+                if (dataWrapper.getVocKrccAntiCorruption() != null) {
+                    resultJdbcTemplate.update(
+                            "INSERT INTO VOC_KRCC_ANTI_CORRUPTION (KRCC_REPORTER_ID, REPRESENTATIVE, VISIBILITY, EXPECTED_EFFECT, " +
+                                    "IMPROVEMENT_PLAN, AGREED_INVESTIGATION_BY_RELATED_AGENCY, AGREED_INVESTIGATION_BY_OTHER_AGENCY, " +
+                                    "AGREED_TRANSFER_INVESTIGATION, REPORTEE_NAME, REPORTEE_ORGANIZATION, REPORTEE_DEPARTMENT, " +
+                                    "REPORTEE_ADDRESS_ID, REPORTEE_CONTACT) " +
+                                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            dataWrapper.getVocKrccAntiCorruption().getKrccReporterId(),
+                            dataWrapper.getVocKrccAntiCorruption().getRepresentative(),
+                            dataWrapper.getVocKrccAntiCorruption().getVisibility(),
+                            dataWrapper.getVocKrccAntiCorruption().getExpectedEffect(),
+                            dataWrapper.getVocKrccAntiCorruption().getImprovementPlan(),
+                            dataWrapper.getVocKrccAntiCorruption().getAgreedInvestigationByRelatedAgency(),
+                            dataWrapper.getVocKrccAntiCorruption().getAgreedInvestigationByOtherAgency(),
+                            dataWrapper.getVocKrccAntiCorruption().getAgreedTransferInvestigation(),
+                            dataWrapper.getVocKrccAntiCorruption().getReporteeName(),
+                            dataWrapper.getVocKrccAntiCorruption().getReporteeOrganization(),
+                            dataWrapper.getVocKrccAntiCorruption().getReporteeDepartment(),
+                            dataWrapper.getVocKrccAntiCorruption().getReporteeAddressId(),
+                            dataWrapper.getVocKrccAntiCorruption().getReporteeContact()
+                    );
+                }
+
+                if (dataWrapper.getVocKrccGeneral() != null) {
+                    resultJdbcTemplate.update(
+                            "INSERT INTO VOC_KRCC_GENERAL (KRCC_REPORTER_ID, VISIBILITY, EXPECTED_EFFECT, IMPROVEMENT_PLAN) " +
+                                    "VALUES (?, ?, ?, ?)",
+                            dataWrapper.getVocKrccGeneral().getKrccReporterId(),
+                            dataWrapper.getVocKrccGeneral().getVisibility(),
+                            dataWrapper.getVocKrccGeneral().getExpectedEffect(),
+                            dataWrapper.getVocKrccGeneral().getImprovementPlan()
+                    );
+                }
+
+
+                if (dataWrapper.getVocProcess() != null) {
+                    GeneratedKeyHolder vocProcessKeyHolder = new GeneratedKeyHolder();
+                    resultJdbcTemplate.update(connection -> {
+                        PreparedStatement ps = connection.prepareStatement(
+                                "INSERT INTO VOC_PROCESS (VOC_ID, STATUS_CODE, VOC_TYPE_ID, VOC_TYPE_ORIGIN_NAME, MAIN_RECEPTIONIST_ID, " +
+                                        "SUB_RECEPTIONIST_ID, DUE_DATE, DUE_DATE_CHANGE_REASON, ORGANIZATION_ASSIGNER_ID, ORGANIZATION_ID, " +
+                                        "MAIN_ASSIGNER_ID, SUB_ASSIGNER_ID, MANAGER_ID, CREATED_AT, UPDATED_AT) " +
+                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                new String[] { "ID" }
+                        );
+                        ps.setObject(1, vocIdRef.get());
+                        ps.setString(2, dataWrapper.getVocProcess().getStatusCode());
+                        ps.setObject(3, dataWrapper.getVocProcess().getVocTypeId());
+                        ps.setString(4, dataWrapper.getVocProcess().getVocTypeOriginName());
+                        ps.setObject(5, dataWrapper.getVocProcess().getMainReceptionistId());
+                        ps.setObject(6, dataWrapper.getVocProcess().getSubReceptionistId());
+                        ps.setObject(7, dataWrapper.getVocProcess().getDueDate());
+                        ps.setString(8, dataWrapper.getVocProcess().getDueDateChangeReason());
+                        ps.setObject(9, dataWrapper.getVocProcess().getOrganizationAssignerId());
+                        ps.setObject(10, dataWrapper.getVocProcess().getOrganizationId());
+                        ps.setObject(11, dataWrapper.getVocProcess().getMainAssignerId());
+                        ps.setObject(12, dataWrapper.getVocProcess().getSubAssignerId());
+                        ps.setObject(13, dataWrapper.getVocProcess().getManagerId());
+                        ps.setObject(14, dataWrapper.getVocProcess().getCreatedAt());
+                        ps.setObject(15, dataWrapper.getVocProcess().getUpdatedAt());
+                        return ps;
+                    }, vocProcessKeyHolder);
+
+                    vocProcessIdRef.set(Objects.requireNonNull(vocProcessKeyHolder.getKey()).longValue());
+                }
+
+                if (vocIdRef.get() != null && vocProcessIdRef.get() != null) {
+                    resultJdbcTemplate.update(
+                            "UPDATE VOC SET VOC_PROCESS_ID = ? WHERE ID = ?",
+                            vocProcessIdRef.get(),
+                            vocIdRef.get()
+                    );
+                }
+
+                if (dataWrapper.getVocProgressNotiTypeRelation() != null) {
+                    resultJdbcTemplate.update(
+                            "INSERT INTO VOC_PROGRESS_NOTI_TYPE_RELATION (VOC_ID, NOTIFICATION_TYPE) " +
+                                    "VALUES (?, ?)",
+                            vocIdRef.get(),
+                            dataWrapper.getVocProgressNotiTypeRelation().getNotificationType()
+                    );
+                }
+
+                if (dataWrapper.getVocResultNotiTypeRelation() != null) {
+                    resultJdbcTemplate.update(
+                            "INSERT INTO VOC_RESULT_NOTI_TYPE_RELATION (VOC_ID, NOTIFICATION_TYPE) " +
+                                    "VALUES (?, ?)",
+                            vocIdRef.get(),
+                            dataWrapper.getVocResultNotiTypeRelation().getNotificationType()
+                    );
+                }
+
+
+            }
+        };
+    }
+
 
 
     @Bean
