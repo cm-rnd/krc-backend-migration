@@ -100,7 +100,7 @@ public class BatchJob {
     @Bean
     public ItemWriter<FilteredVOC> filiteredDataWriter() {
         return items -> {
-            //vocRepository.saveAll(items);
+            vocRepository.saveAll(items);
         };
     }
 
