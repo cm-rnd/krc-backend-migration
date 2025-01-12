@@ -28,4 +28,5 @@ public class Answer {
     private String content;     // 내용
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long hits;
 }
