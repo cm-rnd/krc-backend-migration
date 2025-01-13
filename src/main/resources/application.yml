@@ -22,17 +22,17 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
+#datasource:
+#  from:
+#    jdbc-url: jdbc:mysql://localhost:3307/bi_krcc_migration_test?useUnicode=true&characterEncoding=utf8
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    username: test
+#    password: 1234
+
 datasource:
   from:
-    jdbc-url: jdbc:mysql://localhost:3307/bi_krcc_migration_test?useUnicode=true&characterEncoding=utf8
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: test
-    password: 1234
+    jdbc-url: jdbc:tibero:thin:@8.20.0.100:8629:superapp_dev_tibero
+    driver-class-name: com.tmax.tibero.jdbc.TbDriver
+    username: cr_ekr_develop
+    password: cr_ekr_develop
 
-#datasource: tibero로 변경 필요
-#  from:
-#    jdbc-url: jdbc:mysql://localhost:3306/bi_krcc_migration_test?useUnicode=true&characterEncoding=utf8
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    username: root
-#    password: 1234
-#
