@@ -10,6 +10,9 @@ import com.tmax.transform.util.StringToBooleanFormatter;
 
 import java.util.Random;
 
+import static com.tmax.transform.util.OrganizationIdSelectorFormatter.getRandomOrganizationId;
+import static com.tmax.transform.util.PersonaIdSelectorFormatter.getRandomPersonaId;
+
 public class VocProcessHelper {
 
     public static void processVoc(FilteredVOC filteredVOC, ProcessedDataWrapper dataWrapper) {
@@ -33,7 +36,8 @@ public class VocProcessHelper {
                 .receiptChannelId(NumberFormatter.convert(filteredVOC.getReceChnl()))
                 .title(filteredVOC.getVocTit())
                 .contents(filteredVOC.getVocCntn())
-                .registerId(NumberFormatter.convert(filteredVOC.getRegUser()))
+                .registerId(getRandomPersonaId()) // personaId 매핑
+                //.registerId(NumberFormatter.convert(filteredVOC.getRegUser()))
                 .registeredAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getReceYmd()))
                 .delete(StringToBooleanFormatter.convertOrDefault(filteredVOC.getDelYn(), false))
                 .createdAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getRegDd()))
@@ -53,18 +57,24 @@ public class VocProcessHelper {
                 .statusCode(String.valueOf(StatusCodeMapper.mapDealStatToNowValue(NormalizeStringFormatter.normalizeCode(filteredVOC.getDealStat()))))
                 .vocTypeId(NumberFormatter.convert(filteredVOC.getVocDvn()))
                 .vocTypeOriginName(filteredVOC.getVocDvn())
-                .mainReceptionistId(NumberFormatter.convert(filteredVOC.getReceUser()))
-                .subReceptionistId(NumberFormatter.convert(filteredVOC.getReceUser()))
+                .mainReceptionistId(getRandomPersonaId())
+                .subReceptionistId(getRandomPersonaId())
+//                .mainReceptionistId(NumberFormatter.convert(filteredVOC.getReceUser()))
+//                .subReceptionistId(NumberFormatter.convert(filteredVOC.getReceUser()))
                 .dueDate(FlexibleDateTimeFormatter.parseLocalDate(filteredVOC.getDealDday()))
                 .dueDateChangeReason(null)
                 .organizationAssignerId(NumberFormatter.convert(filteredVOC.getDealDepUser()))
-                .organizationId(NumberFormatter.convert(filteredVOC.getDealDepCd()))
-                .organizationName("임의 생성")
-                .organizationPath("Root")
-                .organizationLevel(1L)
-                .mainAssignerId(NumberFormatter.convert(filteredVOC.getDealUser() != null ? filteredVOC.getDealUser() : "1"))
-                .subAssignerId(NumberFormatter.convert(filteredVOC.getDealUser() != null ? filteredVOC.getDealUser() : "1"))
-                .managerId(NumberFormatter.convert(filteredVOC.getDealDepUser() != null ? filteredVOC.getDealUser() : "1"))
+                .organizationId(getRandomOrganizationId())
+//                .organizationId(NumberFormatter.convert(filteredVOC.getDealDepCd()))
+//                .organizationName("임의 생성")
+//                .organizationPath("Root")
+//                .organizationLevel(1L)
+                .mainAssignerId(getRandomPersonaId())
+                .subAssignerId(getRandomPersonaId())
+                .managerId(getRandomPersonaId())
+//                .mainAssignerId(NumberFormatter.convert(filteredVOC.getDealUser() != null ? filteredVOC.getDealUser() : "1"))
+//                .subAssignerId(NumberFormatter.convert(filteredVOC.getDealUser() != null ? filteredVOC.getDealUser() : "1"))
+//                .managerId(NumberFormatter.convert(filteredVOC.getDealDepUser() != null ? filteredVOC.getDealUser() : "1"))
                 .managerName(filteredVOC.getDealDepUser())
                 .createdAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getRegDd()))
                 .updatedAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getUpdtDd()))
@@ -83,7 +93,7 @@ public class VocProcessHelper {
 
     private static VocKrccGeneral createVocKrccGeneral(FilteredVOC filteredVOC) {
         return VocKrccGeneral.builder()
-                .krccReporterId(1L)
+                .krccReporterId(getRandomPersonaId())
                 .visibility(StringToBooleanFormatter.convertOrDefault(filteredVOC.getOpenYn(), true))
                 .expectedEffect(filteredVOC.getHopeEfct())
                 .improvementPlan(filteredVOC.getImprDire())
@@ -94,7 +104,7 @@ public class VocProcessHelper {
         String defaultOrgName = "농어촌공사";
 
         return VocKrccAntiCorruption.builder()
-                .krccReporterId(1L)
+                .krccReporterId(getRandomPersonaId())
                 .representative(false)
                 .visibility(StringToBooleanFormatter.convertOrDefault(filteredVOC.getOpenYn(), true))
                 .expectedEffect(filteredVOC.getHopeEfct())
@@ -146,13 +156,14 @@ public class VocProcessHelper {
     private static Answer createAnswer(FilteredVOC filteredVOC) {
         Random random = new Random();
         int randomValue = random.nextInt(5) + 1;
-        Integer complaintClassificationId = filteredVOC.getVocDvn().equals("10") ?randomValue : null;
+//        Integer complaintClassificationId = filteredVOC.getVocDvn().equals("10") ? randomValue : null;
 
         return Answer.builder()
-                .writerId(NumberFormatter.convert(filteredVOC.getDealUser()))
+                .writerId(getRandomPersonaId())
+                //.writerId(NumberFormatter.convert(filteredVOC.getDealUser()))
                 .title(filteredVOC.getAnswNotes())
                 .isPublicWithinCompany(StringToBooleanFormatter.convertOrDefault(filteredVOC.getOpenYn(), true))
-                .complaintClassificationId(complaintClassificationId)
+                .complaintClassificationId(randomValue)
                 .complaintType(String.valueOf(ComplaintTypeMapper.convertComplaintTypeByCode(NormalizeStringFormatter.normalizeCode(filteredVOC.getVocType()))))
                 .complaintCategory(String.valueOf(ComplaintCategoryMapper.getCategoryByInput(filteredVOC.getVocFld())))
                 .processingType(String.valueOf(ProcessingTypeMapper.convertProcessingTypeByCode(NormalizeStringFormatter.normalizeCode(filteredVOC.getDealType()))))
