@@ -27,8 +27,9 @@ public class FlexibleDateTimeFormatter {
         if (dateTimeString == null || dateTimeString.isEmpty()) {
             return null;
         }
+        String filteredDateTimeString = NormalizeStringFormatter.normalizeCode(dateTimeString);
 
-        TemporalAccessor temp = FORMATTER.parse(dateTimeString);
+        TemporalAccessor temp = FORMATTER.parse(filteredDateTimeString);
         return LocalDateTime.from(temp);
     }
 
@@ -36,8 +37,9 @@ public class FlexibleDateTimeFormatter {
         if (dateTimeString == null || dateTimeString.isEmpty()) {
             return null;
         }
+        String filteredDateTimeString = NormalizeStringFormatter.normalizeCode(dateTimeString);
 
-        TemporalAccessor temp = FORMATTER.parse(dateTimeString);
+        TemporalAccessor temp = FORMATTER.parse(filteredDateTimeString);
         return LocalDateTime.from(temp).toLocalDate();
     }
 

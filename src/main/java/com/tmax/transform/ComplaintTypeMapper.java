@@ -23,9 +23,9 @@ public enum ComplaintTypeMapper {
     }
 
     public static ComplaintTypeMapper convertComplaintTypeByCode(String code) {
-        if (code == null || code.isEmpty()) {
-            throw new IllegalArgumentException("Code cannot be null or empty");
-        }
+//        if (code == null || code.isEmpty()) {
+//            throw new IllegalArgumentException("Code cannot be null or empty");
+//        }
 
         switch (code) {
             case "1":
@@ -37,7 +37,7 @@ public enum ComplaintTypeMapper {
             case "4":
                 return ComplaintTypeMapper.COMPLAINT;
             default:
-                throw new IllegalArgumentException("Invalid code: " + code);
+                return ComplaintTypeMapper.COMPLAINT;
         }
     }
 }

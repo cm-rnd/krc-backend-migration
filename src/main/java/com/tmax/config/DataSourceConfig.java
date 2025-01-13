@@ -27,6 +27,7 @@ public class DataSourceConfig {
         return DataSourceBuilder.create().build();
     }
 
+    @Primary
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(@Qualifier("batchDataSource") DataSource batchDataSource) {
         return new DataSourceTransactionManager(batchDataSource);

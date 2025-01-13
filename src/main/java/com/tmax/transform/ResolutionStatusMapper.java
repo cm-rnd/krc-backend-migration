@@ -28,9 +28,9 @@ public enum ResolutionStatusMapper {
     }
 
     public static ResolutionStatusMapper convertResolutionStatusByCode(String code) {
-        if (code == null || code.isEmpty()) {
-            throw new IllegalArgumentException("Code cannot be null or empty");
-        }
+//        if (code == null || code.isEmpty()) {
+//            throw new IllegalArgumentException("Code cannot be null or empty");
+//        }
 
         switch (code) {
             case "1":
@@ -44,7 +44,7 @@ public enum ResolutionStatusMapper {
             case "5":
                 return ResolutionStatusMapper.OTHER;
             default:
-                throw new IllegalArgumentException("Invalid code: " + code);
+                return ResolutionStatusMapper.OTHER;
         }
     }
 

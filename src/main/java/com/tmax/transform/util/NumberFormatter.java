@@ -2,8 +2,8 @@ package com.tmax.transform.util;
 
 public class NumberFormatter {
     public static Long convert(String value) {
-        if (value == null || value.isEmpty()) {
-            throw new IllegalArgumentException("Input value cannot be null or empty");
+        if (value == null || value.isEmpty() || value.equals("SYSTEM")) {
+            value = "1";
         }
         try {
             if (value.contains(".")) {
@@ -12,7 +12,8 @@ public class NumberFormatter {
                 return Long.parseLong(value);
             }
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid input for conversion to long: " + value, e);
+            return 1L;
+//            throw new IllegalArgumentException("Invalid input for conversion to long: " + value, e);
         }
     }
 }

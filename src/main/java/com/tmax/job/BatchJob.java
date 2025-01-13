@@ -2,7 +2,6 @@ package com.tmax.job;
 
 import com.tmax.job.jpa.FilteredVocRepository;
 import lombok.RequiredArgsConstructor;
-import net.sf.jsqlparser.util.validation.ValidationException;
 import com.tmax.job.reader.OriginVOC;
 import com.tmax.job.writer.FilteredVOC;
 import com.tmax.job.processor.ProcessedDataWrapper;
@@ -33,6 +32,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -54,28 +54,20 @@ public class BatchJob {
 
     private final JobRepository jobRepository;
 
-    @Qualifier("transactionManager")
     private final PlatformTransactionManager transactionManager;
-
-    @Qualifier("jdbcTransactionManager")
-    private final PlatformTransactionManager jdbcTransactionManager;
 
     private final FilteredVocRepository vocRepository;
 
-    @Qualifier("resultJdbcTemplate")
     private final JdbcTemplate resultJdbcTemplate;
 
-    @Qualifier("batchDataSource")
     private final DataSource batchDataSource;
-    @Qualifier("resultDataSource")
-    private final DataSource resultDataSource;
-
 
     @Bean
-    public Job migrationJob() throws Exception {
-        return new JobBuilder("migrationJob", jobRepository)
-                .start(validationStep())
-                .next(migrationStep())
+    public Job migrationJob41() throws Exception {
+        return new JobBuilder("migrationJob41", jobRepository)
+                .start(migrationStep())
+//                .start(validationStep())
+//                .next(migrationStep())
                 .build();
     }
 
@@ -86,9 +78,9 @@ public class BatchJob {
                 .reader(originVocReader())
                 .processor(validationProcessor())
                 .writer(filiteredDataWriter())
-                .faultTolerant()
-                .skip(ValidationException.class)
-                .listener(skipListener())
+//                .faultTolerant()
+//                .skip(ValidationException.class)
+//                .listener(skipListener())
                 .build();
     }
 
@@ -105,6 +97,7 @@ public class BatchJob {
     }
 
     @Bean
+    @Transactional(transactionManager = "transactionManager")
     public ItemWriter<FilteredVOC> filiteredDataWriter() {
         return items -> {
             vocRepository.saveAll(items);
@@ -210,7 +203,7 @@ public class BatchJob {
                                         "VOC_KRCC_ANTI_CORRUPTION_ID, VOC_NUMBER, REPORTER_NAME, REPORTED_AT, PHONE, MOBILE, FAX, EMAIL, " +
                                         "ADDRESS_ID, RECEIPT_TYPE, TITLE, CONTENTS, REGISTER_ID, VOC_PROCESS_ID, DELETED, " +
                                         "REGISTERED_AT, CREATED_AT, UPDATED_AT, NUMBER_OF_REPORTERS, HITS, RECEIPT_CHANNEL_ID) " +
-                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                                 new String[] { "ID" }
                         );
                         ps.setString(1, dataWrapper.getVoc().getVocClassification());

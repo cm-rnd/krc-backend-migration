@@ -36,10 +36,10 @@ public enum ProcessingTypeMapper {
     }
 
     public static ProcessingTypeMapper convertProcessingTypeByCode(String code) {
-        if (code == null || code.isEmpty()) {
-            throw new IllegalArgumentException("Code cannot be null or empty");
-        }
-
+//        if (code == null || code.isEmpty()) {
+//            throw new IllegalArgumentException("Code cannot be null or empty");
+//        }
+//
         switch (code) {
             case "1":
                 return ProcessingTypeMapper.ACCEPTANCE_OF_DEMANDS_SUB;
@@ -74,7 +74,7 @@ public enum ProcessingTypeMapper {
             case "16":
                 return ProcessingTypeMapper.INTERNAL_CLOSURE_MORE_THAN_3_TIMES;
             default:
-                throw new IllegalArgumentException("Invalid code: " + code);
+                return ProcessingTypeMapper.INTERNAL_CLOSURE_MORE_THAN_3_TIMES;
         }
     }
 }

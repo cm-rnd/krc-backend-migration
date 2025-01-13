@@ -28,10 +28,10 @@ public enum ReceiptTypeMapper {
     }
 
     public static ReceiptTypeMapper convertReceiptTypeByCode(String code) {
-        if (code == null || code.isEmpty()) {
-            throw new IllegalArgumentException("Code cannot be null or empty");
-        }
-
+//        if (code == null || code.isEmpty()) {
+//            throw new IllegalArgumentException("Code cannot be null or empty");
+//        }
+//
         switch (code) {
             case "1":
                 return ReceiptTypeMapper.PRESIDENTIAL_SECRETARIAT;
@@ -52,7 +52,7 @@ public enum ReceiptTypeMapper {
             case "9":
                 return ReceiptTypeMapper.FAX_OR_COMPUTER;
             default:
-                throw new IllegalArgumentException("Invalid code: " + code);
+                return ReceiptTypeMapper.FAX_OR_COMPUTER;
         }
     }
 }

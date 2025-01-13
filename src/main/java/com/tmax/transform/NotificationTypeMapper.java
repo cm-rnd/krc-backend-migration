@@ -13,9 +13,9 @@ public enum NotificationTypeMapper {
     private final String description;
 
     public static NotificationTypeMapper convertToNotificationType(String input) {
-        if (input == null || input.isEmpty()) {
-            throw new IllegalArgumentException("Input cannot be null or empty");
-        }
+//        if (input == null || input.isEmpty()) {
+//            throw new IllegalArgumentException("Input cannot be null or empty");
+//        }
 
         switch (input) {
             case "1":
@@ -25,7 +25,7 @@ public enum NotificationTypeMapper {
             case "3":
                 return NotificationTypeMapper.SMS;
             default:
-                throw new IllegalArgumentException("Invalid code: " + input);
+                return NotificationTypeMapper.SMS;
         }
     }
 }

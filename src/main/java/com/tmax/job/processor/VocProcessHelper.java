@@ -18,7 +18,7 @@ public class VocProcessHelper {
 
     private static Voc createVoc(FilteredVOC filteredVOC) {
         String vocClassification = filteredVOC.getVocDvn().equals("5") ? "VOC_KRCC_ANTI_CORRUPTION" : "VOC_KRCC_GENERAL";
-
+        String persCnt = NormalizeStringFormatter.normalizeCode(filteredVOC.getPersCnt());
         return Voc.builder()
                 .vocClassification(vocClassification)
                 .vocNumber(filteredVOC.getReceNo())
@@ -38,7 +38,7 @@ public class VocProcessHelper {
                 .delete(StringToBooleanFormatter.convertOrDefault(filteredVOC.getDelYn(), false))
                 .createdAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getRegDd()))
                 .updatedAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getUpdtDd()))
-                .numberOfReporters(Integer.valueOf(filteredVOC.getPersCnt()))
+                .numberOfReporters(Integer.valueOf(persCnt.isEmpty() ? "1" : persCnt))
                 .hits(1L)
                 .build();
     }
@@ -62,9 +62,9 @@ public class VocProcessHelper {
                 .organizationName("임의 생성")
                 .organizationPath("Root")
                 .organizationLevel(1L)
-                .mainAssignerId(NumberFormatter.convert(filteredVOC.getDealUser()))
-                .subAssignerId(NumberFormatter.convert(filteredVOC.getDealUser()))
-                .managerId(NumberFormatter.convert(filteredVOC.getDealDepUser()))
+                .mainAssignerId(NumberFormatter.convert(filteredVOC.getDealUser() != null ? filteredVOC.getDealUser() : "1"))
+                .subAssignerId(NumberFormatter.convert(filteredVOC.getDealUser() != null ? filteredVOC.getDealUser() : "1"))
+                .managerId(NumberFormatter.convert(filteredVOC.getDealDepUser() != null ? filteredVOC.getDealUser() : "1"))
                 .managerName(filteredVOC.getDealDepUser())
                 .createdAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getRegDd()))
                 .updatedAt(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getUpdtDd()))

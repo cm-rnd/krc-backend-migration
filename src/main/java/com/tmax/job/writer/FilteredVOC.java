@@ -4,95 +4,219 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "filteredvoc") // 테이블 이름
 public class FilteredVOC {
 
-
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String vocDvn;           // VOC_DVN
-    private String receNo;           // RECE_NO
-    private String dealStat;         // DEAL_STAT
-    private String dealDtlStat;      // DEAL_DTL_STAT
-    private String cstNo;            // CST_NO
-    private String cstNm;            // CST_NM
-    private String cstRcgnNo;        // CST_RCGN_NO
-    private String email;            // EMAIL
-    private String hp;               // HP
-    private String telNo;            // TEL_NO
-    private String faxNo;            // FAX_NO
-    private String postNo;           // POST_NO
-    private String addrBase;         // ADDR_BASE
-    private String addrDtl;          // ADDR_DTL
-    private String openYn;           // OPEN_YN
-    private String vocTit;           // VOC_TIT
+    @Column(name = "voc_dvn")
+    private String vocDvn;
+
+    @Column(name = "rece_no")
+    private String receNo;
+
+    @Column(name = "deal_stat")
+    private String dealStat;
+
+    @Column(name = "deal_dtl_stat")
+    private String dealDtlStat;
+
+    @Column(name = "cst_no")
+    private String cstNo;
+
+    @Column(name = "cst_nm")
+    private String cstNm;
+
+    @Column(name = "cst_rcgn_no")
+    private String cstRcgnNo;
+
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "hp")
+    private String hp;
+
+    @Column(name = "tel_no")
+    private String telNo;
+
+    @Column(name = "fax_no")
+    private String faxNo;
+
+    @Column(name = "post_no")
+    private String postNo;
+
+    @Column(name = "addr_base")
+    private String addrBase;
+
+    @Column(name = "addr_dtl")
+    private String addrDtl;
+
+    @Column(name = "open_yn")
+    private String openYn;
+
+    @Column(name = "voc_tit")
+    private String vocTit;
+
     @Lob
-    @Column(columnDefinition = "LONGTEXT")
-    private String vocCntn;          // VOC_CNTN
+    @Column(name = "voc_cntn", columnDefinition = "LONGTEXT")
+    private String vocCntn;
+
     @Lob
-    @Column(columnDefinition = "TEXT")
-    private String vocNotes;         // VOC_NOTES
+    @Column(name = "voc_notes", columnDefinition = "TEXT")
+    private String vocNotes;
+
     @Lob
-    @Column(columnDefinition = "TEXT")
-    private String imprDire;         // IMPR_DIRE
+    @Column(name = "impr_dire", columnDefinition = "TEXT")
+    private String imprDire;
+
     @Lob
-    @Column(columnDefinition = "TEXT")
-    private String hopeEfct;         // HOPE_EFCT
-    private String persCnt;         // PERS_CNT
-    private String infoPuseAgrYn;    // INFO_PUSE_AGR_YN
-    private String infoPuseAgrDd;    // INFO_PUSE_AGR_DD
-    private String receChnl;         // RECE_CHNL
-    private String receDvn;          // RECE_DVN
-    private String receYmd;          // RECE_YMD
-    private String receUser;         // RECE_USER
-    private String receUserNm;       // RECE_USER_NM
-    private String receDepCd;        // RECE_DEP_CD
-    private String receDepNm;        // RECE_DEP_NM
-    private String vocType;          // VOC_TYPE
-    private String vocFld;           // VOC_FLD
-    private String vocKd;            // VOC_KD
-    private String dealDday;         // DEAL_DDAY
-    private String asgnVocYn;        // ASGN_VOC_YN
-    private String getMn;            // GET_MN
+    @Column(name = "hope_efct", columnDefinition = "TEXT")
+    private String hopeEfct;
+
+    @Column(name = "pers_cnt")
+    private String persCnt;
+
+    @Column(name = "info_puse_agr_yn")
+    private String infoPuseAgrYn;
+
+    @Column(name = "info_puse_agr_dd")
+    private String infoPuseAgrDd;
+
+    @Column(name = "rece_chnl")
+    private String receChnl;
+
+    @Column(name = "rece_dvn")
+    private String receDvn;
+
+    @Column(name = "rece_ymd")
+    private String receYmd;
+
+    @Column(name = "rece_user")
+    private String receUser;
+
+    @Column(name = "rece_user_nm")
+    private String receUserNm;
+
+    @Column(name = "rece_dep_cd")
+    private String receDepCd;
+
+    @Column(name = "rece_dep_nm")
+    private String receDepNm;
+
+    @Column(name = "voc_type")
+    private String vocType;
+
+    @Column(name = "voc_fld")
+    private String vocFld;
+
+    @Column(name = "voc_kd")
+    private String vocKd;
+
+    @Column(name = "deal_dday")
+    private String dealDday;
+
+    @Column(name = "asgn_voc_yn")
+    private String asgnVocYn;
+
+    @Column(name = "get_mn")
+    private String getMn;
+
     @Lob
-    @Column(columnDefinition = "TEXT")
-    private String transMtr;         // TRANS_MTR
-    private String dealDepCd;        // DEAL_DEP_CD
-    private String dealDepNm;        // DEAL_DEP_NM
-    private String dealDepSubCd;     // DEAL_DEP_SUB_CD
-    private String dealDepSubNm;     // DEAL_DEP_SUB_NM
-    private String dealYmd;          // DEAL_YMD
-    private String dealUser;         // DEAL_USER
-    private String answNotes;        // ANSW_NOTES
+    @Column(name = "trans_mtr", columnDefinition = "TEXT")
+    private String transMtr;
+
+    @Column(name = "deal_dep_cd")
+    private String dealDepCd;
+
+    @Column(name = "deal_dep_nm")
+    private String dealDepNm;
+
+    @Column(name = "deal_dep_sub_cd")
+    private String dealDepSubCd;
+
+    @Column(name = "deal_dep_sub_nm")
+    private String dealDepSubNm;
+
+    @Column(name = "deal_ymd")
+    private String dealYmd;
+
+    @Column(name = "deal_user")
+    private String dealUser;
+
+    @Column(name = "answ_notes")
+    private String answNotes;
+
     @Lob
-    @Column(columnDefinition = "TEXT")
-    private String answCntn;         // ANSW_CNTN
-    private String docNo;            // DOC_NO
-    private String solvDvn;          // SOLV_DVN
-    private String rprtMeth;         // RPRT_METH
-    private String dealType;         // DEAL_TYPE
-    private String relapYn;          // RELAP_YN
-    private String sameVocYn;        // SAME_VOC_YN
-    private String dealDtCnt;       // DEAL_DTCNT
-    private String dealApvUser;      // DEAL_APV_USER
-    private String vocApvUser;       // VOC_APV_USER
-    private String cancelYn;         // CANCEL_YN
-    private String cancelResn;       // CANCEL_RESN
-    private String cancelDttm;       // CANCEL_DTTM
-    private String epoDvn;           // EPO_DVN
-    private String delYn;            // DEL_YN
-    private String regUser;          // REG_USER
-    private String regDd;            // REG_DD
-    private String updtUser;         // UPDT_USER
-    private String updtDd;           // UPDT_DD
-    private String dealDepUser;      // DEAL_DEP_USER
-    private String dealDepbNm;       // DEAL_DEPB_NM
-    private String dealDepcNm;       // DEAL_DEPC_NM
+    @Column(name = "answ_cntn", columnDefinition = "TEXT")
+    private String answCntn;
+
+    @Column(name = "doc_no")
+    private String docNo;
+
+    @Column(name = "solv_dvn")
+    private String solvDvn;
+
+    @Column(name = "rprt_meth")
+    private String rprtMeth;
+
+    @Column(name = "deal_type")
+    private String dealType;
+
+    @Column(name = "relap_yn")
+    private String relapYn;
+
+    @Column(name = "same_voc_yn")
+    private String sameVocYn;
+
+    @Column(name = "deal_dt_cnt")
+    private String dealDtCnt;
+
+    @Column(name = "deal_apv_user")
+    private String dealApvUser;
+
+    @Column(name = "voc_apv_user")
+    private String vocApvUser;
+
+    @Column(name = "cancel_yn")
+    private String cancelYn;
+
+    @Column(name = "cancel_resn")
+    private String cancelResn;
+
+    @Column(name = "cancel_dttm")
+    private String cancelDttm;
+
+    @Column(name = "epo_dvn")
+    private String epoDvn;
+
+    @Column(name = "del_yn")
+    private String delYn;
+
+    @Column(name = "reg_user")
+    private String regUser;
+
+    @Column(name = "reg_dd")
+    private String regDd;
+
+    @Column(name = "updt_user")
+    private String updtUser;
+
+    @Column(name = "updt_dd")
+    private String updtDd;
+
+    @Column(name = "deal_dep_user")
+    private String dealDepUser;
+
+    @Column(name = "deal_depb_nm")
+    private String dealDepbNm;
+
+    @Column(name = "deal_depc_nm")
+    private String dealDepcNm;
 
 }

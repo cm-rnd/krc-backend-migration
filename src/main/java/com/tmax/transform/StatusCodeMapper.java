@@ -25,9 +25,9 @@ public enum StatusCodeMapper {
     }
 
     public static StatusCodeMapper fromCode(String code) {
-        if (code == null || code.isEmpty()) {
-            throw new IllegalArgumentException("Code cannot be null or empty");
-        }
+//        if (code == null || code.isEmpty()) {
+//            throw new IllegalArgumentException("Code cannot be null or empty");
+//        }
 
         for (StatusCodeMapper status : values()) {
             if (status.getCode().equals(code)) {
@@ -44,7 +44,7 @@ public enum StatusCodeMapper {
             case "4" -> StatusCodeMapper.ANSWER_PROGRESS;
             case "5" -> StatusCodeMapper.ANSWER_COMPLETE;
             case "9" -> StatusCodeMapper.REPORTER_WITHDRAW;
-            default -> throw new IllegalArgumentException("Invalid dealStat: " + dealStat);
+            default -> StatusCodeMapper.REPORTER_WITHDRAW;
         };
     }
 
