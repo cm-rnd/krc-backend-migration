@@ -190,7 +190,8 @@ public class BatchJob {
             for (ProcessedDataWrapper dataWrapper : items) {
                 AtomicReference<Long> vocIdRef = new AtomicReference<>();
                 AtomicReference<Long> vocProcessIdRef = new AtomicReference<>();
-
+                AtomicReference<Long> vocKrccAntiCorruptionIdRef = new AtomicReference<>();
+                AtomicReference<Long> vocKrccGeneralIdRef = new AtomicReference<>();
 
 
                 if (dataWrapper.getVoc() != null) {
@@ -263,37 +264,54 @@ public class BatchJob {
                 }
 
                 if (dataWrapper.getVocKrccAntiCorruption() != null) {
-                    resultJdbcTemplate.update(
-                            "INSERT INTO VOC_KRCC_ANTI_CORRUPTION (KRCC_REPORTER_ID, REPRESENTATIVE, VISIBILITY, EXPECTED_EFFECT, " +
-                                    "IMPROVEMENT_PLAN, AGREED_INVESTIGATION_BY_RELATED_AGENCY, AGREED_INVESTIGATION_BY_OTHER_AGENCY, " +
-                                    "AGREED_TRANSFER_INVESTIGATION, REPORTEE_NAME, REPORTEE_ORGANIZATION, REPORTEE_DEPARTMENT, " +
-                                    "REPORTEE_ADDRESS_ID, REPORTEE_CONTACT) " +
-                                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                            dataWrapper.getVocKrccAntiCorruption().getKrccReporterId(),
-                            dataWrapper.getVocKrccAntiCorruption().getRepresentative(),
-                            dataWrapper.getVocKrccAntiCorruption().getVisibility(),
-                            dataWrapper.getVocKrccAntiCorruption().getExpectedEffect(),
-                            dataWrapper.getVocKrccAntiCorruption().getImprovementPlan(),
-                            dataWrapper.getVocKrccAntiCorruption().getAgreedInvestigationByRelatedAgency(),
-                            dataWrapper.getVocKrccAntiCorruption().getAgreedInvestigationByOtherAgency(),
-                            dataWrapper.getVocKrccAntiCorruption().getAgreedTransferInvestigation(),
-                            dataWrapper.getVocKrccAntiCorruption().getReporteeName(),
-                            dataWrapper.getVocKrccAntiCorruption().getReporteeOrganization(),
-                            dataWrapper.getVocKrccAntiCorruption().getReporteeDepartment(),
-                            dataWrapper.getVocKrccAntiCorruption().getReporteeAddressId(),
-                            dataWrapper.getVocKrccAntiCorruption().getReporteeContact()
-                    );
+                    GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+
+                    resultJdbcTemplate.update(connection -> {
+                        PreparedStatement ps = connection.prepareStatement(
+                                "INSERT INTO VOC_KRCC_ANTI_CORRUPTION (KRCC_REPORTER_ID, REPRESENTATIVE, VISIBILITY, EXPECTED_EFFECT, " +
+                                        "IMPROVEMENT_PLAN, AGREED_INVESTIGATION_BY_RELATED_AGENCY, AGREED_INVESTIGATION_BY_OTHER_AGENCY, " +
+                                        "AGREED_TRANSFER_INVESTIGATION, REPORTEE_NAME, REPORTEE_ORGANIZATION, REPORTEE_DEPARTMENT, " +
+                                        "REPORTEE_ADDRESS_ID, REPORTEE_CONTACT) " +
+                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                new String[]{"ID"}
+                        );
+                        ps.setObject(1, dataWrapper.getVocKrccAntiCorruption().getKrccReporterId());
+                        ps.setBoolean(2, dataWrapper.getVocKrccAntiCorruption().getRepresentative());
+                        ps.setBoolean(3, dataWrapper.getVocKrccAntiCorruption().getVisibility());
+                        ps.setString(4, dataWrapper.getVocKrccAntiCorruption().getExpectedEffect());
+                        ps.setString(5, dataWrapper.getVocKrccAntiCorruption().getImprovementPlan());
+                        ps.setBoolean(6, dataWrapper.getVocKrccAntiCorruption().getAgreedInvestigationByRelatedAgency());
+                        ps.setBoolean(7, dataWrapper.getVocKrccAntiCorruption().getAgreedInvestigationByOtherAgency());
+                        ps.setBoolean(8, dataWrapper.getVocKrccAntiCorruption().getAgreedTransferInvestigation());
+                        ps.setString(9, dataWrapper.getVocKrccAntiCorruption().getReporteeName());
+                        ps.setString(10, dataWrapper.getVocKrccAntiCorruption().getReporteeOrganization());
+                        ps.setString(11, dataWrapper.getVocKrccAntiCorruption().getReporteeDepartment());
+                        ps.setObject(12, dataWrapper.getVocKrccAntiCorruption().getReporteeAddressId());
+                        ps.setString(13, dataWrapper.getVocKrccAntiCorruption().getReporteeContact());
+                        return ps;
+                    }, keyHolder);
+
+                    vocKrccAntiCorruptionIdRef.set(Objects.requireNonNull(keyHolder.getKey()).longValue());
                 }
 
+
                 if (dataWrapper.getVocKrccGeneral() != null) {
-                    resultJdbcTemplate.update(
-                            "INSERT INTO VOC_KRCC_GENERAL (KRCC_REPORTER_ID, VISIBILITY, EXPECTED_EFFECT, IMPROVEMENT_PLAN) " +
-                                    "VALUES (?, ?, ?, ?)",
-                            dataWrapper.getVocKrccGeneral().getKrccReporterId(),
-                            dataWrapper.getVocKrccGeneral().getVisibility(),
-                            dataWrapper.getVocKrccGeneral().getExpectedEffect(),
-                            dataWrapper.getVocKrccGeneral().getImprovementPlan()
-                    );
+                    GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+
+                    resultJdbcTemplate.update(connection -> {
+                        PreparedStatement ps = connection.prepareStatement(
+                                "INSERT INTO VOC_KRCC_GENERAL (KRCC_REPORTER_ID, VISIBILITY, EXPECTED_EFFECT, IMPROVEMENT_PLAN) " +
+                                        "VALUES (?, ?, ?, ?)",
+                                new String[]{"ID"}
+                        );
+                        ps.setObject(1, dataWrapper.getVocKrccGeneral().getKrccReporterId());
+                        ps.setBoolean(2, dataWrapper.getVocKrccGeneral().getVisibility());
+                        ps.setString(3, dataWrapper.getVocKrccGeneral().getExpectedEffect());
+                        ps.setString(4, dataWrapper.getVocKrccGeneral().getImprovementPlan());
+                        return ps;
+                    }, keyHolder);
+
+                    vocKrccGeneralIdRef.set(Objects.requireNonNull(keyHolder.getKey()).longValue());
                 }
 
 
@@ -329,11 +347,21 @@ public class BatchJob {
                 }
 
                 if (vocIdRef.get() != null && vocProcessIdRef.get() != null) {
-                    resultJdbcTemplate.update(
-                            "UPDATE VOC SET VOC_PROCESS_ID = ? WHERE ID = ?",
-                            vocProcessIdRef.get(),
-                            vocIdRef.get()
-                    );
+                    if(vocKrccAntiCorruptionIdRef.get() != null) {
+                        resultJdbcTemplate.update(
+                                "UPDATE VOC SET VOC_PROCESS_ID = ?, VOC_KRCC_ANTI_CORRUPTION_ID = ?  WHERE ID = ?",
+                                vocProcessIdRef.get(),
+                                vocKrccAntiCorruptionIdRef.get(),
+                                vocIdRef.get()
+                        );
+                    } else if(vocKrccGeneralIdRef.get() != null) {
+                        resultJdbcTemplate.update(
+                                "UPDATE VOC SET VOC_PROCESS_ID = ?, VOC_KRCC_GENERAL_ID = ? WHERE ID = ?",
+                                vocProcessIdRef.get(),
+                                vocKrccGeneralIdRef.get(),
+                                vocIdRef.get()
+                        );
+                    }
                 }
 
                 if (dataWrapper.getVocProgressNotiTypeRelation() != null) {
