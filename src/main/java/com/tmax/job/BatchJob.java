@@ -28,13 +28,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;i
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.FileWriter;
@@ -62,8 +64,8 @@ public class BatchJob {
     private final DataSource batchDataSource;
 
     @Bean
-    public Job migrationJob41() throws Exception {
-        return new JobBuilder("migrationJob41", jobRepository)
+    public Job migrationJobDev() throws Exception {
+        return new JobBuilder("migrationJobDev", jobRepository)
                 .start(migrationStep())
 //                .start(validationStep())
 //                .next(migrationStep())
@@ -122,6 +124,7 @@ public class BatchJob {
             }
         };
     }
+
     @Bean
     public Step migrationStep() throws Exception {
         return new StepBuilder("migrationStep", jobRepository)
@@ -198,13 +201,14 @@ public class BatchJob {
                     GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
                     resultJdbcTemplate.update(connection -> {
+
                         PreparedStatement ps = connection.prepareStatement(
                                 "INSERT INTO VOC (VOC_CLASSIFICATION, VOC_MANUAL_GENERAL_ID, VOC_MANUAL_ANTI_CORRUPTION_ID, VOC_KRCC_GENERAL_ID, " +
                                         "VOC_KRCC_ANTI_CORRUPTION_ID, VOC_NUMBER, REPORTER_NAME, REPORTED_AT, PHONE, MOBILE, FAX, EMAIL, " +
                                         "ADDRESS_ID, RECEIPT_TYPE, TITLE, CONTENTS, REGISTER_ID, VOC_PROCESS_ID, DELETED, " +
                                         "REGISTERED_AT, CREATED_AT, UPDATED_AT, NUMBER_OF_REPORTERS, HITS, RECEIPT_CHANNEL_ID) " +
                                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                new String[] { "ID" }
+                                new String[]{"ID"}
                         );
                         ps.setString(1, dataWrapper.getVoc().getVocClassification());
                         ps.setObject(2, dataWrapper.getVoc().getVocManualGeneralId());
@@ -225,9 +229,9 @@ public class BatchJob {
                         ps.setObject(17, dataWrapper.getVoc().getRegisterId());
                         ps.setObject(18, dataWrapper.getVoc().getVocProcessId());
                         ps.setBoolean(19, dataWrapper.getVoc().getDelete());
-                        ps.setObject(20, dataWrapper.getVoc().getRegisteredAt());
-                        ps.setObject(21, dataWrapper.getVoc().getCreatedAt());
-                        ps.setObject(22, dataWrapper.getVoc().getUpdatedAt());
+                        setPreparedStatementDate(ps,20, Timestamp.valueOf(dataWrapper.getVoc().getRegisteredAt()));
+                        setPreparedStatementDate(ps,21, Timestamp.valueOf(dataWrapper.getVoc().getCreatedAt()));
+                        setPreparedStatementDate(ps,22, Timestamp.valueOf(dataWrapper.getVoc().getUpdatedAt()));
                         ps.setObject(23, dataWrapper.getVoc().getNumberOfReporters());
                         ps.setObject(24, dataWrapper.getVoc().getHits());
                         ps.setObject(25, dataWrapper.getVoc().getReceiptChannelId());
@@ -256,8 +260,8 @@ public class BatchJob {
                             dataWrapper.getAnswer().getIsSameComplaint(),
                             dataWrapper.getAnswer().getIsReoccurring(),
                             dataWrapper.getAnswer().getContent(),
-                            dataWrapper.getAnswer().getCreatedAt(),
-                            dataWrapper.getAnswer().getUpdatedAt(),
+                            Timestamp.valueOf(dataWrapper.getAnswer().getCreatedAt()),
+                            Timestamp.valueOf(dataWrapper.getAnswer().getUpdatedAt()),
                             dataWrapper.getAnswer().getHits()
                     );
 
@@ -323,7 +327,7 @@ public class BatchJob {
                                         "SUB_RECEPTIONIST_ID, DUE_DATE, DUE_DATE_CHANGE_REASON, ORGANIZATION_ASSIGNER_ID, ORGANIZATION_ID, " +
                                         "MAIN_ASSIGNER_ID, SUB_ASSIGNER_ID, MANAGER_ID, CREATED_AT, UPDATED_AT) " +
                                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                new String[] { "ID" }
+                                new String[]{"ID"}
                         );
                         ps.setObject(1, vocIdRef.get());
                         ps.setString(2, dataWrapper.getVocProcess().getStatusCode());
@@ -331,15 +335,15 @@ public class BatchJob {
                         ps.setString(4, dataWrapper.getVocProcess().getVocTypeOriginName());
                         ps.setObject(5, dataWrapper.getVocProcess().getMainReceptionistId());
                         ps.setObject(6, dataWrapper.getVocProcess().getSubReceptionistId());
-                        ps.setObject(7, dataWrapper.getVocProcess().getDueDate());
+                        setPreparedStatementDate(ps,7, Timestamp.valueOf(dataWrapper.getVocProcess().getDueDate()));
                         ps.setString(8, dataWrapper.getVocProcess().getDueDateChangeReason());
                         ps.setObject(9, dataWrapper.getVocProcess().getOrganizationAssignerId());
                         ps.setObject(10, dataWrapper.getVocProcess().getOrganizationId());
                         ps.setObject(11, dataWrapper.getVocProcess().getMainAssignerId());
                         ps.setObject(12, dataWrapper.getVocProcess().getSubAssignerId());
                         ps.setObject(13, dataWrapper.getVocProcess().getManagerId());
-                        ps.setObject(14, dataWrapper.getVocProcess().getCreatedAt());
-                        ps.setObject(15, dataWrapper.getVocProcess().getUpdatedAt());
+                        setPreparedStatementDate(ps, 14, Timestamp.valueOf(dataWrapper.getVocProcess().getCreatedAt()));
+                        setPreparedStatementDate(ps,15, Timestamp.valueOf(dataWrapper.getVocProcess().getUpdatedAt()));
                         return ps;
                     }, vocProcessKeyHolder);
 
@@ -347,14 +351,14 @@ public class BatchJob {
                 }
 
                 if (vocIdRef.get() != null && vocProcessIdRef.get() != null) {
-                    if(vocKrccAntiCorruptionIdRef.get() != null) {
+                    if (vocKrccAntiCorruptionIdRef.get() != null) {
                         resultJdbcTemplate.update(
                                 "UPDATE VOC SET VOC_PROCESS_ID = ?, VOC_KRCC_ANTI_CORRUPTION_ID = ?  WHERE ID = ?",
                                 vocProcessIdRef.get(),
                                 vocKrccAntiCorruptionIdRef.get(),
                                 vocIdRef.get()
                         );
-                    } else if(vocKrccGeneralIdRef.get() != null) {
+                    } else if (vocKrccGeneralIdRef.get() != null) {
                         resultJdbcTemplate.update(
                                 "UPDATE VOC SET VOC_PROCESS_ID = ?, VOC_KRCC_GENERAL_ID = ? WHERE ID = ?",
                                 vocProcessIdRef.get(),
@@ -387,7 +391,19 @@ public class BatchJob {
         };
     }
 
-
+    private void setPreparedStatementDate(PreparedStatement ps, int parameterIndex, Object dateTime) throws SQLException {
+        if (dateTime == null) {
+            ps.setNull(parameterIndex, java.sql.Types.DATE);
+        } else if (dateTime instanceof java.time.LocalDate) {
+            ps.setDate(parameterIndex, java.sql.Date.valueOf((java.time.LocalDate) dateTime));
+        } else if (dateTime instanceof java.time.LocalDateTime) {
+            ps.setTimestamp(parameterIndex, Timestamp.valueOf((java.time.LocalDateTime) dateTime));
+        } else if (dateTime instanceof java.util.Date) {
+            ps.setTimestamp(parameterIndex, new Timestamp(((java.util.Date) dateTime).getTime()));
+        } else {
+            throw new IllegalArgumentException("Unsupported date type: " + dateTime.getClass().getName());
+        }
+    }
 
     @Bean
     public FlatFileItemReader<OriginVOC> originVocReader() {

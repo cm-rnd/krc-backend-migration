@@ -21,7 +21,7 @@ public class VocProcess {
     private String vocTypeOriginName;
     private Long mainReceptionistId; // 접수자 (정)
     private Long subReceptionistId; // 접수자 (부)
-    private LocalDate dueDate; // 처리기한
+    private LocalDateTime dueDate; // 처리기한
     private String dueDateChangeReason; // 처리기한 변경사유
 
     private Long organizationAssignerId; // 부서별 배정자 관리

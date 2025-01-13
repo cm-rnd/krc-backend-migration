@@ -61,7 +61,7 @@ public class VocProcessHelper {
                 .subReceptionistId(getRandomPersonaId())
 //                .mainReceptionistId(NumberFormatter.convert(filteredVOC.getReceUser()))
 //                .subReceptionistId(NumberFormatter.convert(filteredVOC.getReceUser()))
-                .dueDate(FlexibleDateTimeFormatter.parseLocalDate(filteredVOC.getDealDday()))
+                .dueDate(FlexibleDateTimeFormatter.parseLocalDateTime(filteredVOC.getDealDday()))
                 .dueDateChangeReason(null)
                 .organizationAssignerId(NumberFormatter.convert(filteredVOC.getDealDepUser()))
                 .organizationId(getRandomOrganizationId())
