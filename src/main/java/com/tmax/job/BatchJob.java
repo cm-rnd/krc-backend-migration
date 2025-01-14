@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;i
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,8 +64,8 @@ public class BatchJob {
     private final DataSource batchDataSource;
 
     @Bean
-    public Job migrationJobDev() throws Exception {
-        return new JobBuilder("migrationJobDev", jobRepository)
+    public Job migrationJobDevFinal() throws Exception {
+        return new JobBuilder("migrationJobDevFinal", jobRepository)
                 .start(migrationStep())
 //                .start(validationStep())
 //                .next(migrationStep())
@@ -217,7 +217,7 @@ public class BatchJob {
                         ps.setObject(5, dataWrapper.getVoc().getVocKrccAntiCorruptionId());
                         ps.setString(6, dataWrapper.getVoc().getVocNumber());
                         ps.setString(7, dataWrapper.getVoc().getReporterName());
-                        ps.setObject(8, dataWrapper.getVoc().getReportedAt());
+                        setPreparedStatementDate(ps,8, dataWrapper.getVoc().getReportedAt());
                         ps.setString(9, dataWrapper.getVoc().getPhone());
                         ps.setString(10, dataWrapper.getVoc().getMobile());
                         ps.setString(11, dataWrapper.getVoc().getFax());
@@ -229,9 +229,9 @@ public class BatchJob {
                         ps.setObject(17, dataWrapper.getVoc().getRegisterId());
                         ps.setObject(18, dataWrapper.getVoc().getVocProcessId());
                         ps.setBoolean(19, dataWrapper.getVoc().getDelete());
-                        setPreparedStatementDate(ps,20, Timestamp.valueOf(dataWrapper.getVoc().getRegisteredAt()));
-                        setPreparedStatementDate(ps,21, Timestamp.valueOf(dataWrapper.getVoc().getCreatedAt()));
-                        setPreparedStatementDate(ps,22, Timestamp.valueOf(dataWrapper.getVoc().getUpdatedAt()));
+                        setPreparedStatementDate(ps,20, dataWrapper.getVoc().getRegisteredAt());
+                        setPreparedStatementDate(ps,21, dataWrapper.getVoc().getCreatedAt());
+                        setPreparedStatementDate(ps,22, dataWrapper.getVoc().getUpdatedAt());
                         ps.setObject(23, dataWrapper.getVoc().getNumberOfReporters());
                         ps.setObject(24, dataWrapper.getVoc().getHits());
                         ps.setObject(25, dataWrapper.getVoc().getReceiptChannelId());
@@ -329,21 +329,22 @@ public class BatchJob {
                                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                                 new String[]{"ID"}
                         );
+
                         ps.setObject(1, vocIdRef.get());
-                        ps.setString(2, dataWrapper.getVocProcess().getStatusCode());
+                        ps.setString(2, dataWrapper.getVocProcess().getStatusCode().toLowerCase());
                         ps.setObject(3, dataWrapper.getVocProcess().getVocTypeId());
                         ps.setString(4, dataWrapper.getVocProcess().getVocTypeOriginName());
                         ps.setObject(5, dataWrapper.getVocProcess().getMainReceptionistId());
                         ps.setObject(6, dataWrapper.getVocProcess().getSubReceptionistId());
-                        setPreparedStatementDate(ps,7, Timestamp.valueOf(dataWrapper.getVocProcess().getDueDate()));
+                        setPreparedStatementDate(ps,7, dataWrapper.getVocProcess().getDueDate());
                         ps.setString(8, dataWrapper.getVocProcess().getDueDateChangeReason());
                         ps.setObject(9, dataWrapper.getVocProcess().getOrganizationAssignerId());
                         ps.setObject(10, dataWrapper.getVocProcess().getOrganizationId());
                         ps.setObject(11, dataWrapper.getVocProcess().getMainAssignerId());
                         ps.setObject(12, dataWrapper.getVocProcess().getSubAssignerId());
                         ps.setObject(13, dataWrapper.getVocProcess().getManagerId());
-                        setPreparedStatementDate(ps, 14, Timestamp.valueOf(dataWrapper.getVocProcess().getCreatedAt()));
-                        setPreparedStatementDate(ps,15, Timestamp.valueOf(dataWrapper.getVocProcess().getUpdatedAt()));
+                        setPreparedStatementDate(ps, 14, dataWrapper.getVocProcess().getCreatedAt());
+                        setPreparedStatementDate(ps,15, dataWrapper.getVocProcess().getUpdatedAt());
                         return ps;
                     }, vocProcessKeyHolder);
 
@@ -385,15 +386,13 @@ public class BatchJob {
                             dataWrapper.getVocResultNotiTypeRelation().getNotificationType()
                     );
                 }
-
-
             }
         };
     }
 
     private void setPreparedStatementDate(PreparedStatement ps, int parameterIndex, Object dateTime) throws SQLException {
         if (dateTime == null) {
-            ps.setNull(parameterIndex, java.sql.Types.DATE);
+            ps.setNull(parameterIndex, java.sql.Types.TIMESTAMP);
         } else if (dateTime instanceof java.time.LocalDate) {
             ps.setDate(parameterIndex, java.sql.Date.valueOf((java.time.LocalDate) dateTime));
         } else if (dateTime instanceof java.time.LocalDateTime) {
